@@ -1,0 +1,44 @@
+:root{
+    --cell-width: 40px;
+    --cell-height: 40px;
+
+    --green: 74 222 128;
+    
+    --background: 0 0 0;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+body{
+    background: rgb(var(--background));
+    overflow: hidden;
+}
+
+#background-grid::before{
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    width: 100vw;
+    height: 100vh;
+    box-shadow: inset 0 0 100px 100px black;
+}
+
+#background-grid{
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    flex-wrap: wrap;
+    align-content: center;
+    justify-content: center;
+}
+
+.background-cell{
+    width: var(--cell-width);
+    height: var(--cell-height);
+    border: 1px grey solid;
+}
