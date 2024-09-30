@@ -40,5 +40,5 @@ body{
 .background-cell{
     width: var(--cell-width);
     height: var(--cell-height);
-    border: 1px grey solid;
+    border: 1px rgba(128, 128, 128, .5) solid;
 }
