@@ -1,10 +1,10 @@
-:root{
+:root {
     --cell-width: 60px;
     --cell-height: 60px;
     --cell-hover-color: black;
 
     --green: 74 222 128;
-    
+
     --background: 0 0 0;
 }
 
@@ -12,14 +12,16 @@
     box-sizing: border-box;
     margin: 0;
     padding: 0;
-  }
-
-body{
-    background: rgb(var(--background));
-    overflow: hidden;
 }
 
-#background-grid{
+body {
+    background: rgb(var(--background));
+    overflow: hidden;
+    max-width: 100%;
+    max-width: 100%;
+}
+
+#background-grid {
     position: absolute;
     left: -50vw;
     top: -10vh;
@@ -32,7 +34,7 @@ body{
     transform: rotateX(50deg) rotateY(-5deg) rotateZ(20deg) scale(1.25);
 }
 
-#vignette{
+#vignette {
     position: absolute;
     top: 0;
     left: 0;
@@ -42,19 +44,19 @@ body{
     pointer-events: none;
 }
 
-.background-cell{
+.background-cell {
     width: var(--cell-width);
     height: var(--cell-height);
     border: 1px rgba(128, 128, 128, .5) solid;
     transition: background-color 500ms linear;
 }
 
-.background-cell:hover{
+.background-cell:hover {
     background-color: var(--cell-hover-color);
     transition: background-color 0ms linear;
 }
 
-.retro-text{
+.retro-text {
     font-size: max(80px, 6vw);
     background: linear-gradient(to bottom, silver 55%, gold 45%);
     -webkit-background-clip: text;
@@ -63,23 +65,23 @@ body{
     pointer-events: none;
 }
 
-#header{
+#header {
     position: absolute;
     top: 4vh;
-    left: calc(4vw + 5px);
+    left: calc(2vw + 15px);
     z-index: 10;
     pointer-events: none;
     user-select: none;
 }
 
-#nom-prenom{
+#nom-prenom {
     /* align-items: center; */
     display: flex;
     flex-direction: column;
     opacity: 0.9;
 }
 
-#prenom::before{
+#prenom::before {
     display: inline-block;
     content: '';
     width: max(28px, 2vw);
@@ -91,7 +93,7 @@ body{
     box-shadow: inset 6px 6px 0 rgba(0, 0, 0, 0.2);
 }
 
-#nom::after{
+#nom::after {
     display: inline-block;
     content: '';
     width: max(28px, 2vw);
@@ -103,60 +105,147 @@ body{
     box-shadow: inset -6px -6px 0 rgba(0, 0, 0, 0.2);
 }
 
-.background-text{
+.background-text {
     background-color: rgba(255, 255, 255, 0.1);
     padding: 8px;
     border-radius: 5px;
 }
 
-#description{
+#description {
     font-size: 1.5rem;
     margin-top: 4vh;
     color: white;
     width: max(600px, 35vw);
 }
 
-#cv{
+
+#work-container{
     position: absolute;
-    z-index: 11;
-    left: max(40px, 4vw);
-    bottom: 60px;
+    z-index: 10;
+    top: 10vh;
+    right: 5vw;
+    width: 50vw;
+    height: 80vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow: scroll;
+    overflow-x: hidden;
+}
+
+.pointer-events-none{
+    pointer-events: none;
+}
+
+.work{
+    margin: 20px;
+    border-radius: 20px;
+    width: 100%;
+    background-color: rgba(255, 255, 255, 0.1);
+    color: white;
+    padding: 40px;
+}
+
+.work > h2{
+    margin-top: 10px;
+}
+
+.work > p{
+    margin-top: 10px;
+    margin-bottom: 20px;
+}
+
+.work > iframe{
+    height: 200px;
+    width: auto;
+    margin-bottom: 20px;
+}
+
+.work > img{
+    margin-bottom: 20px;
+    width: 50%;
+    border: 1px black solid;
+}
+
+.work > .smartlockers{
+    width: 40%;
+    vertical-align: top;
+}
+
+#smartlockers2{
+    width: 50%;
+    margin-left: 20px;
+}
+
+#helphub{
+    width: 90%;;
+}
+
+.button{
     color: white;
     transition: background-color 0.2s;
+    text-decoration: none;
+    background-color: rgba(255, 255, 255, 0.1);
+    padding: 8px;
+    border-radius: 5px;
 }
 
-#cv > span{
-    user-select: none;
-}
-
-#cv:hover{
+.button:hover{
     background-color: rgba(255, 255, 255, 0.2);
     transition: background-color 0.15s;
     cursor: pointer;
 }
 
+.button > span{
+    user-select: none;
+}
 
+#cv {
+    position: absolute;
+    z-index: 11;
+    left: max(40px, 4vw);
+    bottom: 60px;
+}
 
 @media only screen and (max-width: 1800px) {
-    #description{
+    #description {
         width: 600px;
     }
 }
 
 @media only screen and (max-width: 1600px) {
-    #description{
+    #description {
         width: 500px;
     }
 }
 
 @media only screen and (max-width: 1350px) {
-    #description{
+    #description {
         width: 400px;
     }
 }
 
-@media only screen and (max-width: 600px) {
-    #description{
+@media only screen and (max-width: 1000px) {
+    #work-container {
+        width: 40vw;
+    }
+}
+
+@media only screen and (max-width: 800px) {
+    #description {
         width: calc(100vw - 20px - 4vw - 8px);
+    }
+
+    #work-container {
+        position: absolute;
+        width: 90vw;
+        top: 420px;
+        bottom: 120px;
+        height: auto;
+    }
+
+}@media only screen and (max-width: 480px) {
+    #work-container {
+        top: 450px;
     }
 }

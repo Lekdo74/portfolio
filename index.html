@@ -18,7 +18,53 @@
         </div>
     </section>
 
-    <div id="cv" class="background-text">
+    <section id="work-container">
+        <div class="work">
+            <h2>Projects</h2>
+        </div>
+
+        <div class="work">
+            <h2>Smartlockers</h2>
+            <p>During my 2nd year, I completed an internship at Smartlockers, a company that builds and develop from scratch intelligent lockers that people can use for example to retrieve deliveries whenever they want and without the need of direct interactions with another human.</p>
+            <p>I developper the interface in javascript for those lockers, i had to communicate in websocket with a raspberry-pi so the lockers could be used offline (a database is created inside the raspberry and the synced with the "central" database)</p>
+            <p>The application is a single-page interface that allows operators to select their desired use cases, displaying only the relevant buttons associated with those choices. Available use cases include deliveries, luggage storage, sales, press services, and several others.</p>
+            <p>Here, you can see the monitor used for testing the interface independently from the lockers. The other image shows lockers in production still using the old interface.</p>
+            <img class="smartlockers" src="smartlockers.png" alt="">
+            <img class="smartlockers" id="smartlockers2" src="smartlockers2.png" alt="">
+        </div>
+
+        <div class="work">
+            <h2>HelpHub</h2>
+            <p>We have one big project as a group of 5 during our first semester of 2nd year and our subject is about HelpHub, a fictional assocation that wants from us to create a website on which associations could create requests for donations or ask for volunteers for a specific actions.</p>
+            <p>Users can create an account, donate, make participation requests to actions, post comments, create alerts depending on filters, etc.</p>
+            <p>Multiple services can do different tasks depending on which one it is, for exemple the broadcast service can make an action visible or not after it's creation. The accounting department must be able to create contracts, etc.</p>
+            <img id="helphub" src="helphub.png" alt="">
+        </div>
+
+        </div>
+        <div class="work">
+            <h2>Overflow</h2>
+            <p>A game I programmed in january 2023 using the framework Monogame which is built on top of C#. It took me two weeks to create this game, we were originally two but the person in my group was hospitalised so I worked solo on this project.</p>
+            <iframe id="overflow-video" width="100%" height="100%"
+                src="https://www.youtube.com/embed/8zFIM2zkhb4?si=YXH8mZr5SGLR0MCL" title="YouTube video player"
+                frameborder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                allowfullscreen>
+            </iframe>
+            <br>
+            <a href="https://drive.google.com/drive/folders/1h_GuYL83j9TqvzLLeTQc7DWEXVwXtfUX" target="_blank" class="button">Try it &nbsp(download required)</a>
+        </div>
+
+        <div class="work">
+            <h2>?</h2>
+            <p>Small game made in JavaScript where players must avoid a continuous stream of rectangles. The objective is to survive as long as possible while dodging obstacles that come from all directions.</p>
+            <img src="rectangle_game.png" alt="">
+            <br>
+            <a href="https://lekdo.netlify.app/" target="_blank" class="button">Try it &nbsp(sound is loud)</a>
+        </div>
+    </section>
+
+    <div id="cv" class="background-text button">
         <span>
             Check my CV
         </span>
