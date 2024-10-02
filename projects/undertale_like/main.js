@@ -5,11 +5,73 @@ const GRAVITY_FORCE = 0.25;
 let lastUpTime = performance.now();
 
 var pressedKeys = {};
-window.onkeyup = function(e) { pressedKeys[e.keyCode] = false; }
-window.onkeydown = function(e) { pressedKeys[e.keyCode] = true; }
+window.onkeyup = function (e) { pressedKeys[e.keyCode] = false; }
+window.onkeydown = function (e) { pressedKeys[e.keyCode] = true; }
 
-class Heart {
+//Combine plusieurs classes en une seule pour extends plusieurs classes
+function Classes(bases) {
+    class Bases {
+        constructor() {
+            bases.forEach(base => {
+                const instance = new base();
+                Object.assign(this, instance);
+            });
+        }
+    }
+
+    bases.forEach(base => {
+        Object.getOwnPropertyNames(base.prototype).forEach(prop => {
+            if (prop !== 'constructor') {
+                const descriptor = Object.getOwnPropertyDescriptor(base.prototype, prop);
+                Object.defineProperty(Bases.prototype, prop, descriptor);
+            }
+        });
+    });
+
+    return Bases;
+}
+
+
+class Coordinates {
+    get X() {
+        return this.x;
+    }
+    set X(value) {
+        this.x = value;
+        this.div.style.left = this.x + "px";
+    }
+
+    get Y() {
+        return this.y;
+    }
+    set Y(value) {
+        this.y = value;
+        this.div.style.top = this.y + "px";
+    }
+}
+
+class WidthHeight {
+    get Width() {
+        return this.width;
+    }
+    set Width(value) {
+        this.width = value;
+        this.div.style.width = this.width + "px";
+    }
+
+    get Height() {
+        return this.height;
+    }
+    set Height(value) {
+        this.height = value;
+        this.div.style.height = this.height + "px";
+    }
+}
+
+class Heart extends Classes([Coordinates, WidthHeight]) {
     constructor() {
+        super();
+
         let heartData = [
             [" ", " ", "x", "x", " ", " ", " ", " ", " ", " ", " ", " ", "x", "x", " ", " "],
             [" ", "x", "x", "x", "x", "x", " ", " ", " ", " ", "x", "x", "x", "x", "x", " "],
@@ -30,13 +92,12 @@ class Heart {
         ];
 
         this.scale = 1;
-        this.Width = heartData[0].length * this.scale;
-        this.Height = heartData.length * this.scale;
 
         this.div = createEl("div", document.body);
         this.div.classList.add("heart");
-        this.div.style.width = this.Width + "px";
-        this.div.style.height = this.Height + "px";
+
+        this.Width = heartData[0].length * this.scale;
+        this.Height = heartData.length * this.scale;
 
         for (let i = 0; i < heartData.length; i++) {
             for (let j = 0; j < heartData[0].length; j++) {
@@ -55,26 +116,12 @@ class Heart {
         this.X = window.innerWidth / 2;
         this.Y = window.innerHeight / 2;
     }
-
-    get X(){
-        return this.x;
-    }
-    set X(value){
-        this.x = value;
-        this.div.style.left = this.x + "px";
-    }
-
-    get Y(){
-        return this.y;
-    }
-    set Y(value){
-        this.y = value;
-        this.div.style.top = this.y + "px";
-    }
 }
 
-class Box {
-    constructor(){
+class Box extends Classes([Coordinates, WidthHeight]) {
+    constructor() {
+        super();
+
         this.div = createEl("div", document.body);
         this.div.classList.add("box");
 
@@ -83,42 +130,33 @@ class Box {
         this.Width = 350;
         this.Height = 350;
     }
+}
 
-    get X(){
-        return this.x;
+class Obstacle {
+    constructor(shape) {
+        this.shape = shape;
     }
-    set X(value){
-        this.x = value;
-        this.div.style.left = this.x + "px";
-    }
+}
 
-    get Y(){
-        return this.y;
-    }
-    set Y(value){
-        this.y = value;
-        this.div.style.top = this.y + "px";
-    }
+class Rectangle extends Classes([Coordinates, WidthHeight]) {
+    constructor(x, y, w, h) {
+        super();
 
-    get Width(){
-        return this.width;
-    }
-    set Width(value){
-        this.width = value;
-        this.div.style.width = this.width + "px";
+        this.div = createEl("div", document.body);
+        this.div.classList.add("obstacle", "green");
+
+        this.X = x;
+        this.Y = y;
+        this.Width = w;
+        this.Height = h;
     }
 
-    get Height(){
-        return this.height;
-    }
-    set Height(value){
-        this.height = value;
-        this.div.style.height = this.height + "px";
-    }
+
 }
 
 let box;
 let heart;
+let obstacle = new Obstacle(new Rectangle(window.innerWidth / 2 + 50, window.innerHeight / 2 + 50, 100, 100));
 
 function cssVar(name, value) {
     if (name[0] != '-') name = '--' + name
@@ -144,42 +182,42 @@ function applyGravity(deltaTime) {
     heart.Y = heart.Y + velocity;
 }
 
-function keyUp(){
-    if(pressedKeys[90] || pressedKeys[87] || pressedKeys[38]){
+function keyUp() {
+    if (pressedKeys[90] || pressedKeys[87] || pressedKeys[38]) {
         return true;
     }
     return false;
 }
-function keyRight(){
-    if(pressedKeys[68] || pressedKeys[39]){
+function keyRight() {
+    if (pressedKeys[68] || pressedKeys[39]) {
         return true;
     }
     return false;
 }
-function keyDown(){
-    if(pressedKeys[83] || pressedKeys[40]){
+function keyDown() {
+    if (pressedKeys[83] || pressedKeys[40]) {
         return true;
     }
     return false;
 }
-function keyLeft(){
-    if(pressedKeys[81] || pressedKeys[65] || pressedKeys[37]){
+function keyLeft() {
+    if (pressedKeys[81] || pressedKeys[65] || pressedKeys[37]) {
         return true;
     }
     return false;
 }
 
-function move(deltaTime){
-    if(keyUp()){
+function move(deltaTime) {
+    if (keyUp()) {
         heart.Y -= PLAYER_SPEED * deltaTime;
     }
-    if(keyRight()){
+    if (keyRight()) {
         heart.X += PLAYER_SPEED * deltaTime;
     }
-    if(keyDown()){
+    if (keyDown()) {
         heart.Y += PLAYER_SPEED * deltaTime;
     }
-    if(keyLeft()){
+    if (keyLeft()) {
         heart.X -= PLAYER_SPEED * deltaTime;
     }
 }
@@ -195,16 +233,16 @@ function forceInBox() {
     leftBoundary = box.X - box.Width / 2;
     rightBoundary = box.X + box.Width / 2;
 
-    if(y1 <= upperBoundary){
+    if (y1 <= upperBoundary) {
         heart.Y = upperBoundary + heart.Height / 2;
     }
-    if(y2 >= bottomBoundary){
+    if (y2 >= bottomBoundary) {
         heart.Y = bottomBoundary - heart.Height / 2;
     }
-    if(x1 <= leftBoundary){
+    if (x1 <= leftBoundary) {
         heart.X = leftBoundary + heart.Width / 2;
     }
-    if(x2 >= rightBoundary){
+    if (x2 >= rightBoundary) {
         heart.X = rightBoundary - heart.Width / 2;
     }
 }

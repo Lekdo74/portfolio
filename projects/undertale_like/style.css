@@ -24,10 +24,14 @@ body{
     /* transition: top 10ms linear, right 0ms linear, bottom 10ms linear, left 10ms linear; */
 }
 
-.pixel{
+.pixel {
     position: absolute;
     /* width: 1px;
     height: 1px; */
+}
+
+.obstacle {
+    position: absolute;
 }
 
 .red{
