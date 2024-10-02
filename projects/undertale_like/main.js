@@ -3,8 +3,63 @@ const GRAVITY_FORCE = 0.25;
 
 let lastUpTime = performance.now();
 
-let box
-let heart;
+class Heart {
+    constructor() {
+        let heartData = [
+            [" ", " ", "x", "x", " ", " ", " ", " ", " ", " ", " ", " ", "x", "x", " ", " "],
+            [" ", "x", "x", "x", "x", "x", " ", " ", " ", " ", "x", "x", "x", "x", "x", " "],
+            ["x", "x", "x", "x", "x", "x", "x", " ", " ", "x", "x", "x", "x", "x", "x", "x"],
+            ["x", "x", "x", "x", "x", "x", "x", " ", " ", "x", "x", "x", "x", "x", "x", "x"],
+            ["x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x"],
+            ["x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x"],
+            ["x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x"],
+            ["x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x"],
+            ["x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x"],
+            ["x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x"],
+            [" ", " ", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", " ", " "],
+            [" ", " ", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", " ", " "],
+            [" ", " ", " ", " ", "x", "x", "x", "x", "x", "x", "x", "x", " ", " ", " ", " "],
+            [" ", " ", " ", " ", "x", "x", "x", "x", "x", "x", "x", "x", " ", " ", " ", " "],
+            [" ", " ", " ", " ", " ", " ", "x", "x", "x", "x", " ", " ", " ", " ", " ", " "],
+            [" ", " ", " ", " ", " ", " ", "x", "x", "x", "x", " ", " ", " ", " ", " ", " "],
+        ];
+
+        heart = createEl("div", document.body);
+        heart.classList.add("heart")
+
+        for (let i = 0; i < heartData.length; i++) {
+            for (let j = 0; j < heartData[0].length; j++) {
+                let char = heartData[i][j];
+                if (char === "x") {
+                    let pixel = createEl("div", heart);
+                    pixel.classList.add("pixel", "red")
+                    pixel.style.top = i + "px";
+                    pixel.style.left = j + "px";
+                }
+            }
+        }
+
+        heart.style.top = window.innerHeight / 2 + "px";
+        heart.style.left = window.innerWidth / 2 + "px";
+    }
+
+    get x(){
+
+    }
+    set x(value){
+
+    }
+
+    get y(){
+
+    }
+    set y(value){
+
+    }
+}
+
+let box;
+let heart = new Heart();
 
 function cssVar(name, value) {
     if (name[0] != '-') name = '--' + name
@@ -18,7 +73,7 @@ function createEl(tag, container) {
     return element;
 }
 
-function createBox(){
+function createBox() {
     box = createEl("div", document.body);
     box.classList.add("box");
 
@@ -28,64 +83,29 @@ function createBox(){
     box.style.width = "350px";
 }
 
-function createHeart(){
-    let heartData = [
-                        [" ", " ", "x", "x", " ", " ", " ", " ", " ", " ", " ", " ", "x", "x", " ", " "],
-                        [" ", "x", "x", "x", "x", "x", " ", " ", " ", " ", "x", "x", "x", "x", "x", " "],
-                        ["x", "x", "x", "x", "x", "x", "x", " ", " ", "x", "x", "x", "x", "x", "x", "x"],
-                        ["x", "x", "x", "x", "x", "x", "x", " ", " ", "x", "x", "x", "x", "x", "x", "x"],
-                        ["x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x"],
-                        ["x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x"],
-                        ["x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x"],
-                        ["x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x"],
-                        ["x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x"],
-                        ["x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x"],
-                        [" ", " ", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", " ", " "],
-                        [" ", " ", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", " ", " "],
-                        [" ", " ", " ", " ", "x", "x", "x", "x", "x", "x", "x", "x", " ", " ", " ", " "],
-                        [" ", " ", " ", " ", "x", "x", "x", "x", "x", "x", "x", "x", " ", " ", " ", " "],
-                        [" ", " ", " ", " ", " ", " ", "x", "x", "x", "x", " ", " ", " ", " ", " ", " "],
-                        [" ", " ", " ", " ", " ", " ", "x", "x", "x", "x", " ", " ", " ", " ", " ", " "],
-                    ];
+function createHeart() {
 
-    heart = createEl("div", document.body);
-    heart.classList.add("heart")
-
-    for(let i = 0; i < heartData.length; i++){
-        for(let j = 0; j < heartData[0].length; j++){
-            let char = heartData[i][j];
-            if(char === "x"){
-                let pixel = createEl("div", heart);
-                pixel.classList.add("pixel", "red")
-                pixel.style.top = i + "px";
-                pixel.style.left = j + "px";
-            }
-        }
-    }
-
-    heart.style.top = window.innerHeight / 2 + "px";
-    heart.style.left = window.innerWidth / 2 + "px";
 }
 
-function initGame(){
+function initGame() {
     createBox()
     createHeart()
     gameLoop()
 }
 
-function applyGravity(deltaTime){
+function applyGravity(deltaTime) {
     let top = parseFloat(heart.style.top.slice(0, -2));
 
     let velocity = GRAVITY_FORCE * deltaTime;
-    
+
     heart.style.top = top + velocity + "px";
 }
 
-function forceInBox(){
+function forceInBox() {
     console.log(parseFloat((box.style.top).slice(0, -2)) + (box.style.height).slice(0, -2) / 2)
 }
 
-function gameLoop(){
+function gameLoop() {
     setInterval(() => {
         deltaTime = performance.now() - lastUpTime;
 
