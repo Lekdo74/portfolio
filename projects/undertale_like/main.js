@@ -24,42 +24,88 @@ class Heart {
             [" ", " ", " ", " ", " ", " ", "x", "x", "x", "x", " ", " ", " ", " ", " ", " "],
         ];
 
-        heart = createEl("div", document.body);
-        heart.classList.add("heart")
+        this.div = createEl("div", document.body);
+        this.div.classList.add("heart");
 
         for (let i = 0; i < heartData.length; i++) {
             for (let j = 0; j < heartData[0].length; j++) {
                 let char = heartData[i][j];
                 if (char === "x") {
-                    let pixel = createEl("div", heart);
-                    pixel.classList.add("pixel", "red")
+                    let pixel = createEl("div", this.div);
+                    pixel.classList.add("pixel", "red");
                     pixel.style.top = i + "px";
                     pixel.style.left = j + "px";
                 }
             }
         }
 
-        heart.style.top = window.innerHeight / 2 + "px";
-        heart.style.left = window.innerWidth / 2 + "px";
+        this.X = window.innerWidth / 2;
+        this.Y = window.innerHeight / 2;
     }
 
-    get x(){
-
+    get X(){
+        return this.x;
     }
-    set x(value){
-
+    set X(value){
+        this.x = value;
+        this.div.style.left = this.x + "px";
     }
 
-    get y(){
-
+    get Y(){
+        return this.y;
     }
-    set y(value){
+    set Y(value){
+        this.y = value;
+        this.div.style.top = this.y + "px";
+    }
+}
 
+class Box{
+    constructor(){
+        this.div = createEl("div", document.body);
+        this.div.classList.add("box");
+
+        this.X = window.innerWidth / 2;
+        this.Y = window.innerHeight / 2;
+        this.Width = 350;
+        this.Height = 350;
+    }
+
+    get X(){
+        return this.x;
+    }
+    set X(value){
+        this.x = value;
+        this.div.style.left = this.x + "px";
+    }
+
+    get Y(){
+        return this.y;
+    }
+    set Y(value){
+        this.y = value;
+        this.div.style.top = this.y + "px";
+    }
+
+    get Width(){
+        return this.width;
+    }
+    set Width(value){
+        this.width = value;
+        this.div.style.width = this.width + "px";
+    }
+
+    get Height(){
+        return this.height;
+    }
+    set Height(value){
+        this.height = value;
+        this.div.style.height = this.height + "px";
     }
 }
 
 let box;
-let heart = new Heart();
+let heart;
 
 function cssVar(name, value) {
     if (name[0] != '-') name = '--' + name
@@ -73,36 +119,22 @@ function createEl(tag, container) {
     return element;
 }
 
-function createBox() {
-    box = createEl("div", document.body);
-    box.classList.add("box");
-
-    box.style.top = window.innerHeight / 2 + "px";
-    box.style.left = window.innerWidth / 2 + "px";
-    box.style.height = "350px";
-    box.style.width = "350px";
-}
-
-function createHeart() {
-
-}
-
 function initGame() {
-    createBox()
-    createHeart()
+    box = new Box();
+    heart = new Heart();
     gameLoop()
 }
 
 function applyGravity(deltaTime) {
-    let top = parseFloat(heart.style.top.slice(0, -2));
+    let currentY = heart.Y;
 
     let velocity = GRAVITY_FORCE * deltaTime;
 
-    heart.style.top = top + velocity + "px";
+    heart.Y = currentY + velocity;
 }
 
 function forceInBox() {
-    console.log(parseFloat((box.style.top).slice(0, -2)) + (box.style.height).slice(0, -2) / 2)
+    // console.log(parseFloat((box.style.top).slice(0, -2)) + (box.style.height).slice(0, -2) / 2)
 }
 
 function gameLoop() {
@@ -118,6 +150,6 @@ function gameLoop() {
 
 initGame()
 
-document.addEventListener("mousemove", (event) => {
-    console.log(event.clientY)
-});
+// document.addEventListener("mousemove", (event) => {
+//     console.log(event.clientY)
+// });
