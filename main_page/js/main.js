@@ -1,4 +1,4 @@
-const PDF_URL = "./cv_alexandre_giniaux.pdf";
+const PDF_URL = "./main_page/cv_alexandre_giniaux.pdf";
 
 const css = document.documentElement.style;
 
