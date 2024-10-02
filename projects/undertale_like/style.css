@@ -1,0 +1,34 @@
+body{
+    background-color: black;
+}
+
+.box{
+    position: absolute;
+    /* made in js
+    top: 50vh;
+    left: 50vw;
+    width: 350px;
+    height: 350px;*/
+    transform: translate(-50%, -50%);
+    border: solid 6px white;
+}
+
+.heart{
+    position: absolute;
+    /* made in js */
+    /* top: 50vh;
+    left: 50vw; */
+    width: 16px;
+    height: 16px;
+    transform: translate(-50%, -50%) scale(1);
+}
+
+.pixel{
+    position: absolute;
+    width: 1px;
+    height: 1px;
+}
+
+.red{
+    background-color: red;
+}
