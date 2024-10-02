@@ -4,11 +4,11 @@ body{
 
 .box{
     position: absolute;
-    /* made in js
-    top: 50vh;
+    /* made in js */
+    /* top: 50vh;
     left: 50vw;
     width: 350px;
-    height: 350px;*/
+    height: 350px; */
     transform: translate(-50%, -50%);
     border: solid 6px white;
 }
@@ -17,18 +17,23 @@ body{
     position: absolute;
     /* made in js */
     /* top: 50vh;
-    left: 50vw; */
+    left: 50vw;
     width: 16px;
-    height: 16px;
-    transform: translate(-50%, -50%) scale(1);
+    height: 16px; */
+    transform: translate(-50%, -50%);
+    /* transition: top 10ms linear, right 0ms linear, bottom 10ms linear, left 10ms linear; */
 }
 
 .pixel{
     position: absolute;
-    width: 1px;
-    height: 1px;
+    /* width: 1px;
+    height: 1px; */
 }
 
 .red{
     background-color: red;
+}
+
+.green{
+    background-color: green;
 }

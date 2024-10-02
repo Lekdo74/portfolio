@@ -1,7 +1,12 @@
 const TARGETED_GAMELOOP_FREQUENCY = 1 / 60
+const PLAYER_SPEED = 0.15;
 const GRAVITY_FORCE = 0.25;
 
 let lastUpTime = performance.now();
+
+var pressedKeys = {};
+window.onkeyup = function(e) { pressedKeys[e.keyCode] = false; }
+window.onkeydown = function(e) { pressedKeys[e.keyCode] = true; }
 
 class Heart {
     constructor() {
@@ -24,8 +29,14 @@ class Heart {
             [" ", " ", " ", " ", " ", " ", "x", "x", "x", "x", " ", " ", " ", " ", " ", " "],
         ];
 
+        this.scale = 1;
+        this.Width = heartData[0].length * this.scale;
+        this.Height = heartData.length * this.scale;
+
         this.div = createEl("div", document.body);
         this.div.classList.add("heart");
+        this.div.style.width = this.Width + "px";
+        this.div.style.height = this.Height + "px";
 
         for (let i = 0; i < heartData.length; i++) {
             for (let j = 0; j < heartData[0].length; j++) {
@@ -33,8 +44,10 @@ class Heart {
                 if (char === "x") {
                     let pixel = createEl("div", this.div);
                     pixel.classList.add("pixel", "red");
-                    pixel.style.top = i + "px";
-                    pixel.style.left = j + "px";
+                    pixel.style.width = this.scale + "px";
+                    pixel.style.height = this.scale + "px";
+                    pixel.style.top = i * this.scale + "px";
+                    pixel.style.left = j * this.scale + "px";
                 }
             }
         }
@@ -60,7 +73,7 @@ class Heart {
     }
 }
 
-class Box{
+class Box {
     constructor(){
         this.div = createEl("div", document.body);
         this.div.classList.add("box");
@@ -126,22 +139,82 @@ function initGame() {
 }
 
 function applyGravity(deltaTime) {
-    let currentY = heart.Y;
-
     let velocity = GRAVITY_FORCE * deltaTime;
 
-    heart.Y = currentY + velocity;
+    heart.Y = heart.Y + velocity;
+}
+
+function keyUp(){
+    if(pressedKeys[90] || pressedKeys[87] || pressedKeys[38]){
+        return true;
+    }
+    return false;
+}
+function keyRight(){
+    if(pressedKeys[68] || pressedKeys[39]){
+        return true;
+    }
+    return false;
+}
+function keyDown(){
+    if(pressedKeys[83] || pressedKeys[40]){
+        return true;
+    }
+    return false;
+}
+function keyLeft(){
+    if(pressedKeys[81] || pressedKeys[65] || pressedKeys[37]){
+        return true;
+    }
+    return false;
+}
+
+function move(deltaTime){
+    if(keyUp()){
+        heart.Y -= PLAYER_SPEED * deltaTime;
+    }
+    if(keyRight()){
+        heart.X += PLAYER_SPEED * deltaTime;
+    }
+    if(keyDown()){
+        heart.Y += PLAYER_SPEED * deltaTime;
+    }
+    if(keyLeft()){
+        heart.X -= PLAYER_SPEED * deltaTime;
+    }
 }
 
 function forceInBox() {
-    // console.log(parseFloat((box.style.top).slice(0, -2)) + (box.style.height).slice(0, -2) / 2)
+    x1 = heart.X - heart.Width / 2;
+    x2 = heart.X + heart.Width / 2;
+    y1 = heart.Y - heart.Height / 2;
+    y2 = heart.Y + heart.Height / 2;
+
+    upperBoundary = box.Y - box.Height / 2;
+    bottomBoundary = box.Y + box.Height / 2;
+    leftBoundary = box.X - box.Width / 2;
+    rightBoundary = box.X + box.Width / 2;
+
+    if(y1 <= upperBoundary){
+        heart.Y = upperBoundary + heart.Height / 2;
+    }
+    if(y2 >= bottomBoundary){
+        heart.Y = bottomBoundary - heart.Height / 2;
+    }
+    if(x1 <= leftBoundary){
+        heart.X = leftBoundary + heart.Width / 2;
+    }
+    if(x2 >= rightBoundary){
+        heart.X = rightBoundary - heart.Width / 2;
+    }
 }
 
 function gameLoop() {
     setInterval(() => {
         deltaTime = performance.now() - lastUpTime;
 
-        applyGravity(deltaTime);
+        // applyGravity(deltaTime);
+        move(deltaTime);
         forceInBox();
 
         lastUpTime = performance.now();
