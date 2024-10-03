@@ -9,8 +9,8 @@ body{
     left: 50vw;
     width: 350px;
     height: 350px; */
-    transform: translate(-50%, -50%);
-    border: solid 6px white;
+    /* transform: translate(-50%, -50%); */
+    outline: solid 6px white;
 }
 
 .heart{
@@ -20,7 +20,7 @@ body{
     left: 50vw;
     width: 16px;
     height: 16px; */
-    transform: translate(-50%, -50%);
+    /* transform: translate(-50%, -50%); */
     /* transition: top 10ms linear, right 0ms linear, bottom 10ms linear, left 10ms linear; */
 }
 

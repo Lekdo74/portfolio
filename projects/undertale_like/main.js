@@ -1,8 +1,14 @@
 const TARGETED_GAMELOOP_FREQUENCY = 1 / 60
-const PLAYER_SPEED = 0.15;
-const GRAVITY_FORCE = 0.25;
+
+const PLAYER_SPEED = 50;
+const PLAYER_JUMP_FORCE = 1200;
+const PLAYER_RELEASE_JUMP_FORCE = 400;
+
+const GRAVITY_FORCE = 50;
 
 let lastUpTime = performance.now();
+let movementType;
+
 
 var pressedKeys = {};
 window.onkeyup = function (e) { pressedKeys[e.keyCode] = false; }
@@ -14,7 +20,13 @@ function Classes(bases) {
         constructor() {
             bases.forEach(base => {
                 const instance = new base();
-                Object.assign(this, instance);
+                // Object.assign(this, instance);
+
+                Object.getOwnPropertyNames(instance).forEach(prop => {
+                    if (prop.startsWith('#')) {
+                        console.log("test")
+                    }
+                });
             });
         }
     }
@@ -34,37 +46,58 @@ function Classes(bases) {
 
 class Coordinates {
     get X() {
-        return this.x;
+        return this._x;
     }
     set X(value) {
-        this.x = value;
-        this.div.style.left = this.x + "px";
+        this._x = value;
+        this.div.style.left = this._x + "px";
     }
 
     get Y() {
-        return this.y;
+        return this._y;
     }
     set Y(value) {
-        this.y = value;
-        this.div.style.top = this.y + "px";
+        this._y = value;
+        this.div.style.top = this._y + "px";
     }
 }
 
 class WidthHeight {
     get Width() {
-        return this.width;
+        return this._width;
     }
     set Width(value) {
-        this.width = value;
-        this.div.style.width = this.width + "px";
+        this._width = value;
+        this.div.style.width = this._width + "px";
     }
 
     get Height() {
-        return this.height;
+        return this._height;
     }
     set Height(value) {
-        this.height = value;
-        this.div.style.height = this.height + "px";
+        this._height = value;
+        this.div.style.height = this._height + "px";
+    }
+}
+
+class Player {
+    constructor(heart){
+        this._heart = heart;
+        this._yVelocity = 0;
+    }
+
+    get Heart() {
+        return this._heart;
+    }
+    set Heart(value) {
+        this._heart = value;
+    }
+
+    get YVelocity() {
+        return this._yVelocity;
+    }
+    set YVelocity(value) {
+        this._yVelocity = value;
     }
 }
 
@@ -91,7 +124,7 @@ class Heart extends Classes([Coordinates, WidthHeight]) {
             [" ", " ", " ", " ", " ", " ", "x", "x", "x", "x", " ", " ", " ", " ", " ", " "],
         ];
 
-        this.scale = 1;
+        this.scale = 2;
 
         this.div = createEl("div", document.body);
         this.div.classList.add("heart");
@@ -113,8 +146,8 @@ class Heart extends Classes([Coordinates, WidthHeight]) {
             }
         }
 
-        this.X = window.innerWidth / 2;
-        this.Y = window.innerHeight / 2;
+        this.X = (window.innerWidth - this.Width) / 2;
+        this.Y = (window.innerHeight - this.Height) / 2;
     }
 }
 
@@ -125,10 +158,10 @@ class Box extends Classes([Coordinates, WidthHeight]) {
         this.div = createEl("div", document.body);
         this.div.classList.add("box");
 
-        this.X = window.innerWidth / 2;
-        this.Y = window.innerHeight / 2;
         this.Width = 350;
         this.Height = 350;
+        this.X = (window.innerWidth - this.Width) / 2;
+        this.Y = (window.innerHeight - this.Height) / 2;
     }
 }
 
@@ -139,6 +172,7 @@ class Obstacle {
 }
 
 class Rectangle extends Classes([Coordinates, WidthHeight]) {
+    #x;
     constructor(x, y, w, h) {
         super();
 
@@ -150,17 +184,25 @@ class Rectangle extends Classes([Coordinates, WidthHeight]) {
         this.Width = w;
         this.Height = h;
     }
+}
 
+class MovementType {
+    static #WASD = 0;
+    static #ADJUMP = 1;
 
+    static get WASD() { return this.#WASD; }
+    static get ADJUMP() { return this.#ADJUMP; }
 }
 
 let box;
-let heart;
-let obstacle = new Obstacle(new Rectangle(window.innerWidth / 2 + 50, window.innerHeight / 2 + 50, 100, 100));
+let player;
+let obstacles = [];
+let obstacl = new Obstacle(new Rectangle(window.innerWidth / 2 + 50, window.innerHeight / 2 + 50, 100, 100));
+obstacles.push(obstacl);
 
 function cssVar(name, value) {
-    if (name[0] != '-') name = '--' + name
-    if (value) document.documentElement.style.setProperty(name, value)
+    if (name[0] != '-') name = '--' + name;
+    if (value) document.documentElement.style.setProperty(name, value);
     return getComputedStyle(document.documentElement).getPropertyValue(name);
 }
 
@@ -170,18 +212,127 @@ function createEl(tag, container) {
     return element;
 }
 
+function applyGravity(deltaTime) {
+    player.YVelocity -= GRAVITY_FORCE * deltaTime;
+}
+
+function move(deltaTime) {
+    let heart = player.Heart;
+
+    let vector = [0, 0];
+
+    keyup: if (keyUp()) {
+        if(movementType === MovementType.ADJUMP){
+            player.YVelocity = PLAYER_JUMP_FORCE * deltaTime;
+            break keyup;
+        }
+        vector[1] = -1;
+    }
+    else{
+        if(movementType === MovementType.ADJUMP && player.YVelocity > PLAYER_RELEASE_JUMP_FORCE * deltaTime){
+            player.YVelocity = PLAYER_RELEASE_JUMP_FORCE * deltaTime;
+        }
+    }
+    keydown: if (keyDown()) {
+        if(movementType === MovementType.ADJUMP){
+            break keydown;
+        }
+        vector[1] = 1;
+    }
+    if (keyRight()) {
+        vector[0] = 1;
+    }
+    if (keyLeft()) {
+        vector[0] = -1;
+    }
+
+    let magnitude = Math.sqrt(vector[0] ** 2 + vector[1] ** 2);
+    if(magnitude === 0){
+        return;
+    }
+    let normalizedVector = [vector[0] / magnitude, vector[1] / magnitude];
+
+    heart.X += normalizedVector[0] * PLAYER_SPEED * deltaTime;
+    heart.Y += normalizedVector[1] * PLAYER_SPEED * deltaTime;
+}
+
+function applyJump(deltaTime){
+    let heart = player.Heart;
+
+    heart.Y -= player.YVelocity * deltaTime;
+}
+
+function forceInBox() {
+    let heart = player.Heart;
+
+    x1 = heart.X;
+    x2 = heart.X + heart.Width;
+    y1 = heart.Y;
+    y2 = heart.Y + heart.Height;
+
+    upperBoundary = box.Y;
+    bottomBoundary = box.Y + box.Height;
+    leftBoundary = box.X;
+    rightBoundary = box.X + box.Width;
+
+    if (y1 < upperBoundary) {
+        heart.Y = upperBoundary;
+    }
+    if (y2 > bottomBoundary) {
+        heart.Y = bottomBoundary - heart.Height;
+    }
+    if (x1 < leftBoundary) {
+        heart.X = leftBoundary;
+    }
+    if (x2 > rightBoundary) {
+        heart.X = rightBoundary - heart.Width;
+    }
+}
+
+function checkCollisions() {
+    let heart = player.Heart;
+
+    for (let i = 0; i < obstacles.length; i++) {
+        const obstacle = obstacles[i];
+
+        if (obstacle.shape instanceof Rectangle) {
+            const rect = obstacle.shape;
+
+            if (heart.X + heart.Width >= rect.X &&     // r1 right edge past r2 left
+                heart.X <= rect.X + rect.Width &&       // r1 left edge past r2 right
+                heart.Y + heart.Height >= rect.Y &&       // r1 top edge past r2 bottom
+                heart.Y <= rect.Y + rect.Height) {       // r1 bottom edge past r2 top
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+function gameLoop() {
+    setInterval(() => {
+        deltaTime = 1 / (performance.now() - lastUpTime);
+
+        applyGravity(deltaTime);
+        move(deltaTime);
+        applyJump(deltaTime);
+        forceInBox();
+        // console.log(checkCollisions());
+
+        lastUpTime = performance.now();
+    }, TARGETED_GAMELOOP_FREQUENCY)
+}
+
 function initGame() {
     box = new Box();
-    heart = new Heart();
+    player = new  Player(new Heart());
+    movementType = MovementType.ADJUMP;
     gameLoop()
 }
 
-function applyGravity(deltaTime) {
-    let velocity = GRAVITY_FORCE * deltaTime;
+initGame()
 
-    heart.Y = heart.Y + velocity;
-}
-
+//keys
 function keyUp() {
     if (pressedKeys[90] || pressedKeys[87] || pressedKeys[38]) {
         return true;
@@ -207,60 +358,7 @@ function keyLeft() {
     return false;
 }
 
-function move(deltaTime) {
-    if (keyUp()) {
-        heart.Y -= PLAYER_SPEED * deltaTime;
-    }
-    if (keyRight()) {
-        heart.X += PLAYER_SPEED * deltaTime;
-    }
-    if (keyDown()) {
-        heart.Y += PLAYER_SPEED * deltaTime;
-    }
-    if (keyLeft()) {
-        heart.X -= PLAYER_SPEED * deltaTime;
-    }
-}
-
-function forceInBox() {
-    x1 = heart.X - heart.Width / 2;
-    x2 = heart.X + heart.Width / 2;
-    y1 = heart.Y - heart.Height / 2;
-    y2 = heart.Y + heart.Height / 2;
-
-    upperBoundary = box.Y - box.Height / 2;
-    bottomBoundary = box.Y + box.Height / 2;
-    leftBoundary = box.X - box.Width / 2;
-    rightBoundary = box.X + box.Width / 2;
-
-    if (y1 <= upperBoundary) {
-        heart.Y = upperBoundary + heart.Height / 2;
-    }
-    if (y2 >= bottomBoundary) {
-        heart.Y = bottomBoundary - heart.Height / 2;
-    }
-    if (x1 <= leftBoundary) {
-        heart.X = leftBoundary + heart.Width / 2;
-    }
-    if (x2 >= rightBoundary) {
-        heart.X = rightBoundary - heart.Width / 2;
-    }
-}
-
-function gameLoop() {
-    setInterval(() => {
-        deltaTime = performance.now() - lastUpTime;
-
-        // applyGravity(deltaTime);
-        move(deltaTime);
-        forceInBox();
-
-        lastUpTime = performance.now();
-    }, TARGETED_GAMELOOP_FREQUENCY)
-}
-
-initGame()
 
 // document.addEventListener("mousemove", (event) => {
-//     console.log(event.clientY)
+//     console.log([event.clientY])
 // });
