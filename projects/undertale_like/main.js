@@ -42,7 +42,9 @@ class Coordinates {
     }
     set X(value) {
         this._x = value;
-        this.div.style.left = this._x + "px";
+        if (typeof this.div !== "undefined") {
+            this.div.style.left = this._x + "px";
+        }
     }
 
     get Y() {
@@ -50,7 +52,9 @@ class Coordinates {
     }
     set Y(value) {
         this._y = value;
-        this.div.style.top = this._y + "px";
+        if (typeof this.div !== "undefined") {
+            this.div.style.top = this._y + "px";
+        }
     }
 }
 
@@ -60,7 +64,9 @@ class WidthHeight {
     }
     set Width(value) {
         this._width = value;
-        this.div.style.width = this._width + "px";
+        if (typeof this.div !== "undefined") {
+            this.div.style.width = this._width + "px";
+        }
     }
 
     get Height() {
@@ -68,9 +74,12 @@ class WidthHeight {
     }
     set Height(value) {
         this._height = value;
-        this.div.style.height = this._height + "px";
+        if (typeof this.div !== "undefined") {
+            this.div.style.height = this._height + "px";
+        }
     }
 }
+
 
 class Player {
     constructor(heart) {
@@ -103,7 +112,7 @@ class Player {
         this._jumpHoldTime = value;
     }
 
-    get Grounded(){
+    get Grounded() {
         return this._grounded;
     }
     set Grounded(value) {
@@ -125,27 +134,49 @@ class Player {
     }
 }
 
+class Obstacle {
+    constructor(shape) {
+        this.shape = shape;
+    }
+}
+
+class Rectangle extends Classes([Coordinates, WidthHeight]) {
+    constructor(x, y, w, h, debug = false) {
+        super();
+
+        if (debug) {
+            this.div = createEl("div", document.body);
+            this.div.classList.add("obstacle", "green");
+        }
+
+        this.X = x;
+        this.Y = y;
+        this.Width = w;
+        this.Height = h;
+    }
+}
+
 class Heart extends Classes([Coordinates, WidthHeight]) {
     constructor() {
         super();
 
         let heartData = [
-            [" ", " ", "x", "x", " ", " ", " ", " ", " ", " ", " ", " ", "x", "x", " ", " "],
-            [" ", "x", "x", "x", "x", "x", " ", " ", " ", " ", "x", "x", "x", "x", "x", " "],
-            ["x", "x", "x", "x", "x", "x", "x", " ", " ", "x", "x", "x", "x", "x", "x", "x"],
-            ["x", "x", "x", "x", "x", "x", "x", " ", " ", "x", "x", "x", "x", "x", "x", "x"],
-            ["x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x"],
-            ["x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x"],
-            ["x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x"],
-            ["x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x"],
-            ["x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x"],
-            ["x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x"],
-            [" ", " ", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", " ", " "],
-            [" ", " ", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", " ", " "],
-            [" ", " ", " ", " ", "x", "x", "x", "x", "x", "x", "x", "x", " ", " ", " ", " "],
-            [" ", " ", " ", " ", "x", "x", "x", "x", "x", "x", "x", "x", " ", " ", " ", " "],
-            [" ", " ", " ", " ", " ", " ", "x", "x", "x", "x", " ", " ", " ", " ", " ", " "],
-            [" ", " ", " ", " ", " ", " ", "x", "x", "x", "x", " ", " ", " ", " ", " ", " "],
+            [" ", " ", "0", "0", " ", " ", " ", " ", " ", " ", " ", " ", "1", "1", " ", " "],
+            [" ", "2", "2", "2", "2", "2", " ", " ", " ", " ", "3", "3", "3", "3", "3", " "],
+            ["4", "4", "4", "4", "4", "4", "4", " ", " ", "5", "5", "5", "5", "5", "5", "5"],
+            ["4", "4", "4", "4", "4", "4", "4", " ", " ", "5", "5", "5", "5", "5", "5", "5"],
+            ["6", "6", "6", "6", "6", "6", "6", "6", "6", "6", "6", "6", "6", "6", "6", "6"],
+            ["6", "6", "6", "6", "6", "6", "6", "6", "6", "6", "6", "6", "6", "6", "6", "6"],
+            ["6", "6", "6", "6", "6", "6", "6", "6", "6", "6", "6", "6", "6", "6", "6", "6"],
+            ["6", "6", "6", "6", "6", "6", "6", "6", "6", "6", "6", "6", "6", "6", "6", "6"],
+            ["6", "6", "6", "6", "6", "6", "6", "6", "6", "6", "6", "6", "6", "6", "6", "6"],
+            ["6", "6", "6", "6", "6", "6", "6", "6", "6", "6", "6", "6", "6", "6", "6", "6"],
+            [" ", " ", "7", "7", "7", "7", "7", "7", "7", "7", "7", "7", "7", "7", " ", " "],
+            [" ", " ", "7", "7", "7", "7", "7", "7", "7", "7", "7", "7", "7", "7", " ", " "],
+            [" ", " ", " ", " ", "8", "8", "8", "8", "8", "8", "8", "8", " ", " ", " ", " "],
+            [" ", " ", " ", " ", "8", "8", "8", "8", "8", "8", "8", "8", " ", " ", " ", " "],
+            [" ", " ", " ", " ", " ", " ", "9", "9", "9", "9", " ", " ", " ", " ", " ", " "],
+            [" ", " ", " ", " ", " ", " ", "9", "9", "9", "9", " ", " ", " ", " ", " ", " "],
         ];
 
         this.scale = 2;
@@ -159,7 +190,7 @@ class Heart extends Classes([Coordinates, WidthHeight]) {
         for (let i = 0; i < heartData.length; i++) {
             for (let j = 0; j < heartData[0].length; j++) {
                 let char = heartData[i][j];
-                if (char === "x") {
+                if (char !== " ") {
                     let pixel = createEl("div", this.div);
                     pixel.classList.add("pixel", "red");
                     pixel.style.width = this.scale + "px";
@@ -172,6 +203,45 @@ class Heart extends Classes([Coordinates, WidthHeight]) {
 
         this.X = (window.innerWidth - this.Width) / 2;
         this.Y = (window.innerHeight - this.Height) / 2;
+
+        let rectanglesData = {};
+        for (let i = 0; i < heartData.length; i++) {
+            for (let j = 0; j < heartData[0].length; j++) {
+                let char = heartData[i][j];
+                if (char !== " ") {
+                    let x = j;
+                    let y = i;
+                    if (!(char in rectanglesData)) {
+                        let width = 1;
+                        let height = 1;
+                        rectanglesData[char] = {
+                            rectangle: char,
+                            x: x,
+                            y: y,
+                            width: width,
+                            height: height
+                        }
+                    }
+                    else if (x >= rectanglesData[char].x + rectanglesData[char].width - 1) {
+                        rectanglesData[char].width = x - rectanglesData[char].x + 1;
+                        rectanglesData[char].height = y - rectanglesData[char].y + 1;
+                    }
+                }
+            }
+        }
+
+        this.HitboxRectangles = [];
+        for (let key in rectanglesData) {
+            const data = rectanglesData[key];
+            this.HitboxRectangles.push(new Rectangle(data.x * this.scale, data.y * this.scale, data.width * this.scale, data.height * this.scale));
+        }
+    }
+
+    get HitboxRectangles() {
+        return this._hitboxRectangles;
+    }
+    set HitboxRectangles(value) {
+        this._hitboxRectangles = value;
     }
 }
 
@@ -189,27 +259,6 @@ class Box extends Classes([Coordinates, WidthHeight]) {
     }
 }
 
-class Obstacle {
-    constructor(shape) {
-        this.shape = shape;
-    }
-}
-
-class Rectangle extends Classes([Coordinates, WidthHeight]) {
-    #x;
-    constructor(x, y, w, h) {
-        super();
-
-        this.div = createEl("div", document.body);
-        this.div.classList.add("obstacle", "green");
-
-        this.X = x;
-        this.Y = y;
-        this.Width = w;
-        this.Height = h;
-    }
-}
-
 class MovementType {
     static #WASD = 0;
     static #ADJUMP = 1;
@@ -221,7 +270,7 @@ class MovementType {
 let box;
 let player;
 let obstacles = [];
-let obstacl = new Obstacle(new Rectangle(window.innerWidth / 2 + 50, window.innerHeight / 2 + 50, 100, 100));
+let obstacl = new Obstacle(new Rectangle(window.innerWidth / 2 + 50, window.innerHeight / 2 + 50, 100, 100, true));
 obstacles.push(obstacl);
 
 function cssVar(name, value) {
@@ -237,9 +286,11 @@ function createEl(tag, container) {
 }
 
 function applyGravity(deltaTime) {
-    player.YVelocity -= GRAVITY_FORCE * deltaTime;
+    if (movementType === MovementType.ADJUMP) {
+        player.YVelocity -= GRAVITY_FORCE * deltaTime;
 
-    player.Heart.Y -= player.YVelocity * deltaTime;
+        player.Heart.Y -= player.YVelocity * deltaTime;
+    }
 }
 
 function move(deltaTime) {
@@ -254,7 +305,7 @@ function move(deltaTime) {
                 player.JumpHoldTime += deltaTime;
                 player.YVelocity = PLAYER_JUMP_FORCE * deltaTime;
             }
-            else{
+            else {
                 player.ReleasedJumpKeySinceLastJump = false;
             }
         }
@@ -266,19 +317,19 @@ function move(deltaTime) {
         if (movementType === MovementType.ADJUMP) {
             player.ReleasedJumpKeySinceLastJump = true;
 
-            if(!player.Grounded){
+            if (!player.Grounded) {
                 player.CanJump = false;
                 player.JumpHoldTime = 0;
             }
 
-            if(player.YVelocity > PLAYER_RELEASE_JUMP_FORCE * deltaTime){
+            if (player.YVelocity > PLAYER_RELEASE_JUMP_FORCE * deltaTime) {
                 player.YVelocity = PLAYER_RELEASE_JUMP_FORCE * deltaTime;
             }
         }
     }
     if (keyDown()) {
         if (movementType === MovementType.ADJUMP) {
-            
+
         }
         else {
             vector[1] = 1;
@@ -340,13 +391,37 @@ function checkCollisions() {
         if (obstacle.shape instanceof Rectangle) {
             const rect = obstacle.shape;
 
-            if (heart.X + heart.Width >= rect.X &&     // r1 right edge past r2 left
-                heart.X <= rect.X + rect.Width &&       // r1 left edge past r2 right
-                heart.Y + heart.Height >= rect.Y &&       // r1 top edge past r2 bottom
-                heart.Y <= rect.Y + rect.Height) {       // r1 bottom edge past r2 top
-                return true;
+            if (!rectangleCollision(player.Heart, rect)) {
+                return false
             }
+
+            let updatedHitboxRectangles = [];
+            for (let k = 0; k < player.Heart.HitboxRectangles.length; k++) {
+                let updatedRect = Object.create(player.Heart.HitboxRectangles[k]);
+                updatedRect.X += player.Heart.X;
+                updatedRect.Y += player.Heart.Y;
+                updatedHitboxRectangles.push(updatedRect);
+            }
+
+            for (let i = 0; i < updatedHitboxRectangles.length; i++) {
+                const heartPart = updatedHitboxRectangles[i];
+                if (rectangleCollision(heartPart, rect)) {
+                    return true;
+                }
+            }
+
+            return false;
         }
+    }
+    return false;
+}
+
+function rectangleCollision(r1, r2) {
+    if (r1.X + r1.Width >= r2.X &&     // r1 right edge past r2 left
+        r1.X <= r2.X + r2.Width &&       // r1 left edge past r2 right
+        r1.Y + r1.Height >= r2.Y &&       // r1 top edge past r2 bottom
+        r1.Y <= r2.Y + r2.Height) {       // r1 bottom edge past r2 top
+        return true;
     }
     return false;
 }
@@ -358,7 +433,7 @@ function gameLoop() {
         applyGravity(deltaTime);
         move(deltaTime);
         forceInBox();
-        // console.log(checkCollisions());
+        console.log(checkCollisions());
 
         // console.log(["grounded", player.Grounded]);
         // console.log(["can jump", player.CanJump]);
@@ -371,7 +446,7 @@ function gameLoop() {
 function initGame() {
     box = new Box();
     player = new Player(new Heart());
-    movementType = MovementType.ADJUMP;
+    movementType = MovementType.WASD;
     gameLoop()
 }
 
