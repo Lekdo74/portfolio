@@ -383,7 +383,7 @@ function forceInBox() {
 }
 
 function checkCollisions() {
-    let heart = player.Heart;
+    let updatedHitboxRectangles;
 
     for (let i = 0; i < obstacles.length; i++) {
         const obstacle = obstacles[i];
@@ -395,12 +395,14 @@ function checkCollisions() {
                 return false
             }
 
-            let updatedHitboxRectangles = [];
-            for (let k = 0; k < player.Heart.HitboxRectangles.length; k++) {
-                let updatedRect = Object.create(player.Heart.HitboxRectangles[k]);
-                updatedRect.X += player.Heart.X;
-                updatedRect.Y += player.Heart.Y;
-                updatedHitboxRectangles.push(updatedRect);
+            if (!updatedHitboxRectangles) {
+                updatedHitboxRectangles = [];
+                for (let k = 0; k < player.Heart.HitboxRectangles.length; k++) {
+                    let updatedRect = Object.create(player.Heart.HitboxRectangles[k]);
+                    updatedRect.X += player.Heart.X;
+                    updatedRect.Y += player.Heart.Y;
+                    updatedHitboxRectangles.push(updatedRect);
+                }
             }
 
             for (let i = 0; i < updatedHitboxRectangles.length; i++) {
@@ -446,7 +448,7 @@ function gameLoop() {
 function initGame() {
     box = new Box();
     player = new Player(new Heart());
-    movementType = MovementType.WASD;
+    movementType = MovementType.ADJUMP;
     gameLoop()
 }
 
