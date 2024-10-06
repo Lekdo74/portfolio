@@ -1,8 +1,8 @@
-body{
+body {
     background-color: black;
 }
 
-.box{
+.box {
     position: absolute;
     /* made in js */
     /* top: 50vh;
@@ -13,7 +13,7 @@ body{
     outline: solid 6px white;
 }
 
-.heart{
+.heart {
     position: absolute;
     /* made in js */
     /* top: 50vh;
@@ -34,10 +34,55 @@ body{
     position: absolute;
 }
 
-.red{
+.red {
     background-color: red;
 }
 
-.green{
+.green {
     background-color: green;
+}
+
+.boss {
+    position: absolute;
+    image-rendering: pixelated;
+}
+
+.deck {
+    position: absolute;
+}
+
+.card {
+    position: absolute;
+    image-rendering: pixelated;
+}
+
+@font-face {
+    font-family: PixelOperatorMonoHB8;
+    src: url(fonts/PixelOperatorMonoHB8.ttf);
+}
+
+.health-bar {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+}
+
+.health-bar-bars {
+}
+
+
+.health-bar-back {
+    background-color: red;
+}
+
+.health-bar-front {
+    background-color: yellow;
+    margin-top: -30px;
+}
+
+.health-bar-text {
+    font-family: PixelOperatorMonoHB8;
+    color: white;
 }
