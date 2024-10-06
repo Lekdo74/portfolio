@@ -17,7 +17,7 @@ const CARDS_SPRITES = { club: "./images/cards/clubs/Clubs_card_01.png", diamond:
 const NUMBER_OF_CARDS = 54;
 const CARD_WIDTH = 54;
 const CARD_HEIGHT = CARD_WIDTH / 27 * 34;
-const CARDS_SHOW_TIME = 500;
+const CARDS_SHOW_TIME = 2000;
 const CARDS_OPACITY_DELAY = 100;
 
 const GRAVITY_FORCE = 50;
@@ -690,7 +690,35 @@ class AttackOne extends Attack {
         this.OnGoing = true;
         console.log("attack one started");
 
-        await revealCards(4);
+
+        const cards = await revealCards(randInt(1, 2));
+
+        for(let i = 0; i < cards.length; i++){
+            const card = cards[i];
+
+            for(let i = 0; i < 20; i++){
+                let obstacle = new Obstacle(new Rectangle(window.innerWidth / 2 + randInt(30), window.innerHeight / 2 + randInt(30), 100, 100, true));
+                obstacles.push(obstacle);
+            } 
+
+            switch (card.Suit) {
+                case Suit.CLUB:
+                    
+
+                    break;
+                case Suit.DIAMOND:
+
+                    break;
+                case Suit.HEART:
+
+                    break;
+                case Suit.SPADE:
+
+                    break;
+                default:
+                    break;
+            }
+        }
 
         setTimeout(() => {
             this.OnGoing = false;
@@ -890,8 +918,6 @@ let dialogueHelper = new Rectangle();
 dialogueHelper.div = createEl("div");
 dialogueHelper.div.classList.add("dialogue-helper");
 let obstacles = [];
-// let obstacl = new Obstacle(new Rectangle(window.innerWidth / 2 + 50, window.innerHeight / 2 + 50, 100, 100, true));
-// obstacles.push(obstacl);
 
 function cssVar(name, value) {
     if (name[0] != '-') name = '--' + name;
@@ -1097,7 +1123,7 @@ async function revealCards(number) {
                 }, i * CARDS_OPACITY_DELAY);
             }
 
-            resolve();
+            resolve(cards);
         }, CARDS_SHOW_TIME + CARDS_OPACITY_DELAY * cards.length)
     });
 }
@@ -1221,6 +1247,10 @@ function biasedRandom(min, max, power = 2) {
     }
 
     return random * (max - min) / 2 + (min + max) / 2;
+}
+
+function randInt(max){
+    return Math.round(Math.random() * max);
 }
 
 function shuffle(array) {
