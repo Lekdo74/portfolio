@@ -60,7 +60,9 @@ class Coordinates {
     set X(value) {
         this._x = value;
         if (typeof this.div !== "undefined") {
-            this.div.style.left = this._x + "px";
+            requestAnimationFrame(() => {
+                this.div.style.left = this._x + "px";
+            })
         }
     }
 
@@ -70,7 +72,9 @@ class Coordinates {
     set Y(value) {
         this._y = value;
         if (typeof this.div !== "undefined") {
-            this.div.style.top = this._y + "px";
+            requestAnimationFrame(() => {
+                this.div.style.top = this._y + "px";
+            })
         }
     }
 }
@@ -82,7 +86,9 @@ class WidthHeight {
     set Width(value) {
         this._width = value;
         if (typeof this.div !== "undefined") {
-            this.div.style.width = this._width + "px";
+            requestAnimationFrame(() => {
+                this.div.style.width = this._width + "px";
+            })
         }
     }
 
@@ -92,7 +98,9 @@ class WidthHeight {
     set Height(value) {
         this._height = value;
         if (typeof this.div !== "undefined") {
-            this.div.style.height = this._height + "px";
+            requestAnimationFrame(() => {
+                this.div.style.height = this._height + "px";
+            })
         }
     }
 }
@@ -302,11 +310,24 @@ class Deck extends Coordinates {
         this.div = createEl("div", document.body);
         this.div.classList.add("deck");
 
-        // let suits = [Suit.CLUB];
+        let suits = [];
+
+        for (let i = 0; i < 13; i++) {
+            suits.push(Suit.CLUB);
+            suits.push(Suit.DIAMOND);
+            suits.push(Suit.HEART);
+            suits.push(Suit.SPADE);
+        }
+
+        shuffle(suits);
+
+        const firstHalfEnd = Math.floor(suits.length / 2);
+        suits.splice(Math.floor(Math.random() * (suits.length - firstHalfEnd)) + firstHalfEnd, 0, Suit.JOKERBLACK);
+        suits.splice(Math.floor(Math.random() * (suits.length - firstHalfEnd)) + firstHalfEnd, 0, Suit.JOKERRED);
 
         this._cards = [];
         for (let i = 0; i < NUMBER_OF_CARDS; i++) {
-            let card = new Card(Suit.JOKERRED, this.div);
+            let card = new Card(suits.shift(), this.div);
             card.div.style.transform = "rotate(" + biasedRandom(-6, 6, 1) + "deg) translate(" + biasedRandom(-20, 20, 10) + "%, " + biasedRandom(-20, 20, 10) + "%)";
 
             this._cards.push(card);
@@ -1085,11 +1106,9 @@ function gameLoop() {
     setInterval(() => {
         deltaTime = 1 / (performance.now() - lastUpTime);
 
-        requestAnimationFrame(() => {
-            applyGravity(deltaTime);
-            move(deltaTime);
-            forceInBox();
-        })
+        applyGravity(deltaTime);
+        move(deltaTime);
+        forceInBox();
 
         const stage = stages[currentStage];
         if (!stage._started) {
@@ -1202,6 +1221,22 @@ function biasedRandom(min, max, power = 2) {
     }
 
     return random * (max - min) / 2 + (min + max) / 2;
+}
+
+function shuffle(array) {
+    let currentIndex = array.length;
+
+    // While there remain elements to shuffle...
+    while (currentIndex != 0) {
+
+        // Pick a remaining element...
+        let randomIndex = Math.floor(Math.random() * currentIndex);
+        currentIndex--;
+
+        // And swap it with the current element.
+        [array[currentIndex], array[randomIndex]] = [
+            array[randomIndex], array[currentIndex]];
+    }
 }
 
 if (!DEBUG) {
