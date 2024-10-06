@@ -56,8 +56,16 @@ body {
 }
 
 .card {
+    opacity: 1;
     position: absolute;
     image-rendering: pixelated;
+    left: 0px;
+    transition: opacity 0.5s cubic-bezier(0.1, 0.25, 0.5, 1);
+    /* transition: left 1s ease-in, right 1s ease-in, top 1s ease-in, bottom 1s ease-in, transform 1s ease-in-out, translate 1s ease-in-out; */
+}
+
+.hide{
+    opacity: 0;
 }
 
 .health-bar {

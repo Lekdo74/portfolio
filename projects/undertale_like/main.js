@@ -2,7 +2,7 @@ const DEBUG = true;
 const TARGETED_GAMELOOP_FREQUENCY = 1 / 60
 
 let TEXT_SPEED = 60;
-if(DEBUG){
+if (DEBUG) {
     TEXT_SPEED = 1;
 }
 
@@ -13,9 +13,12 @@ const PLAYER_JUMP_FORCE = 1200;
 const PLAYER_RELEASE_JUMP_FORCE = 400;
 const PLAYER_HEALTHBAR_HEIGHT = 30;
 
-const NUMBER_OF_CARDS = 52;
+const CARDS_SPRITES = { club: "./images/cards/clubs/Clubs_card_01.png", diamond: "./images/cards/diamonds/Diamonds_card_01.png", heart: "./images/cards/hearts/Hearts_card_01.png", jokerBlack: "./images/cards/joker/joker_black.png", jokerRed: "./images/cards/joker/joker_red.png", spade: "./images/cards/spades/Spades_card_01.png" }
+const NUMBER_OF_CARDS = 54;
 const CARD_WIDTH = 54;
 const CARD_HEIGHT = CARD_WIDTH / 27 * 34;
+const CARDS_SHOW_TIME = 500;
+const CARDS_OPACITY_DELAY = 100;
 
 const GRAVITY_FORCE = 50;
 
@@ -299,10 +302,12 @@ class Deck extends Coordinates {
         this.div = createEl("div", document.body);
         this.div.classList.add("deck");
 
+        // let suits = [Suit.CLUB];
+
         this._cards = [];
         for (let i = 0; i < NUMBER_OF_CARDS; i++) {
-            let card = new Card(this.div);
-            card.div.style.transform = "rotate(" + biasedRandom(-6, 6, 2) + "deg) translate(" + biasedRandom(-20, 20, 10) + "%, " + biasedRandom(-20, 20, 10) + "%)";
+            let card = new Card(Suit.JOKERRED, this.div);
+            card.div.style.transform = "rotate(" + biasedRandom(-6, 6, 1) + "deg) translate(" + biasedRandom(-20, 20, 10) + "%, " + biasedRandom(-20, 20, 10) + "%)";
 
             this._cards.push(card);
         }
@@ -317,13 +322,16 @@ class Deck extends Coordinates {
 }
 
 class Card extends Classes([Coordinates, WidthHeight]) {
-    constructor(container = document.body) {
+    constructor(suit, container = document.body) {
         super();
+
+        this.Suit = suit;
+
         this._isRotating = false;
         this._currentAngle = 0;
 
         this._backSprite = "./images/cards/back.png";
-        this._frontSprite = "./images/cards/spades/Spades_card_01.png";
+        this._frontSprite = CARDS_SPRITES[this.Suit];
 
         this.div = createEl("img", container);
         this.div.src = "./images/cards/back.png";
@@ -334,38 +342,146 @@ class Card extends Classes([Coordinates, WidthHeight]) {
         this.Height = CARD_HEIGHT;
     }
 
-    flip(){
-        if (this._isRotating){
-            return;
-        }
+    get Suit() {
+        return this._suit;
+    }
+    set Suit(value) {
+        this._suit = value;
+    }
 
-        const currentTransform = this.div.style.transform || "";
-        
-        const translateMatch = currentTransform.match(/translate\(([^)]+)\)/);
-        const translateValue = translateMatch ? translateMatch[0] : "translate(0, 0)";
+    async offsetCard(x, y) {
+        return new Promise((resolve) => {
+            // Initial values for top and left
+            const initialTop = parseFloat(this.div.style.top || 0);
+            const initialLeft = parseFloat(this.div.style.left || 0);
 
-        this._isRotating = true;
+            // Target values based on provided x and y arguments
+            const targetTop = initialTop + y;
+            const targetLeft = initialLeft + x;
+            const offsetSpeed = 0.05; // Speed of offset adjustment
 
-        this._currentAngle = 0;
-        
-        const rotateSpeed = 5;
-        const totalRotation = 180;
-        const frameDuration = TARGETED_GAMELOOP_FREQUENCY;
+            let currentTop = initialTop;
+            let currentLeft = initialLeft;
 
-        const rotateInterval = setInterval(() => {
-            this._currentAngle += rotateSpeed;
-            // let localFlip = this._currentAngle >= 90 ? " rotateX(180);" : "";
-            this.div.style.transform = translateValue + " rotateY("+ this._currentAngle + "deg)";
-            this.div.src = this._currentAngle >= 90 ? this._frontSprite : this._backSprite;
+            const animateOffset = () => {
+                // Update top and left values gradually
+                currentTop = Math.abs(currentTop - targetTop) > offsetSpeed
+                    ? currentTop + (targetTop - currentTop) * offsetSpeed
+                    : targetTop;
 
-            if (this._currentAngle >= totalRotation) {
-                clearInterval(rotateInterval);
-                
-                this.div.style.transform = translateValue + " rotateY(" + totalRotation + "deg)";
-                
-                this._isRotating = false;
-            }
-        }, frameDuration);
+                currentLeft = Math.abs(currentLeft - targetLeft) > offsetSpeed
+                    ? currentLeft + (targetLeft - currentLeft) * offsetSpeed
+                    : targetLeft;
+
+                // Apply the updated top and left values
+                this.div.style.top = `${currentTop}px`;
+                this.div.style.left = `${currentLeft}px`;
+
+                // Continue the animation until offset reaches the target values
+                if (Math.abs(currentTop - targetTop) > 0.1 || Math.abs(currentLeft - targetLeft) > 0.1) {
+                    requestAnimationFrame(animateOffset);
+                } else {
+                    // Once the offset is done, proceed to reset the transform
+                    resolve();
+                }
+            };
+
+            requestAnimationFrame(animateOffset);
+        })
+    }
+
+    resetTransform() {
+        return new Promise((resolve) => {
+            // Initial random transformation
+            const initialTransform = this.div.style.transform || "";
+            const initialRotateMatch = initialTransform.match(/rotate\((-?\d+\.?\d*)deg\)/);
+            const initialTranslateMatch = initialTransform.match(/translate\((-?\d+\.?\d*)%, (-?\d+\.?\d*)%\)/);
+
+            // Get the initial rotation and translation values from the current transform
+            const initialRotation = initialRotateMatch ? parseFloat(initialRotateMatch[1]) : 0;
+            const initialTranslateX = initialTranslateMatch ? parseFloat(initialTranslateMatch[1]) : 0;
+            const initialTranslateY = initialTranslateMatch ? parseFloat(initialTranslateMatch[2]) : 0;
+
+            const targetRotation = 0; // Reset rotation to 0 degrees
+            const targetTranslateX = 0; // Reset translation to 0
+            const targetTranslateY = 0; // Reset translation to 0
+            const resetSpeed = 0.05; // Speed for resetting transform values (0.05 per frame)
+
+            let currentRotation = initialRotation;
+            let currentTranslateX = initialTranslateX;
+            let currentTranslateY = initialTranslateY;
+
+            const animateReset = () => {
+                // Update rotation and translation towards the target values
+                currentRotation = Math.abs(currentRotation - targetRotation) > resetSpeed
+                    ? currentRotation + (targetRotation - currentRotation) * resetSpeed
+                    : targetRotation;
+
+                currentTranslateX = Math.abs(currentTranslateX - targetTranslateX) > resetSpeed
+                    ? currentTranslateX + (targetTranslateX - currentTranslateX) * resetSpeed
+                    : targetTranslateX;
+
+                currentTranslateY = Math.abs(currentTranslateY - targetTranslateY) > resetSpeed
+                    ? currentTranslateY + (targetTranslateY - currentTranslateY) * resetSpeed
+                    : targetTranslateY;
+
+                // Apply the transformation
+                this.div.style.transform = `rotate(${currentRotation}deg) translate(${currentTranslateX}%, ${currentTranslateY}%)`;
+
+                // Continue until transform values are close enough to the target values
+                if (Math.abs(currentRotation - targetRotation) > 0.1 ||
+                    Math.abs(currentTranslateX - targetTranslateX) > 0.1 ||
+                    Math.abs(currentTranslateY - targetTranslateY) > 0.1) {
+                    requestAnimationFrame(animateReset);
+                } else {
+                    // Once transform is reset, allow flipping
+                    resolve();
+                }
+            };
+
+            requestAnimationFrame(animateReset);
+        });
+    }
+
+    startFlipAnimation() {
+        return new Promise((resolve) => {
+            const rotateSpeed = 5; // Degrees per frame for flip
+            const totalRotation = 360; // Flip rotation
+            let skipped180 = false;
+
+            this._currentAngle = 0; // Reset the current angle
+
+            const animateFlip = () => {
+                if (this._currentAngle >= totalRotation) {
+                    // When the rotation completes, reset the rotation and state
+                    this.div.style.transform = `translate(0, 0) rotateY(${totalRotation}deg)`;
+                    this._isRotating = false;
+                    resolve();
+                    return;
+                }
+
+                // Increment the angle
+                this._currentAngle += rotateSpeed;
+
+                // Apply the transformation (translate + rotateY)
+                this.div.style.transform = `translate(0, 0) rotateY(${this._currentAngle}deg)`;
+
+                // Flip the sprite based on the rotation angle
+                if (skipped180 === false && this._currentAngle >= 90) {
+                    skipped180 = true;
+                    this.div.src = this._frontSprite;
+
+                    // Fast-forward through the backside animation if needed
+                    this._currentAngle += 180;
+                }
+
+                // Continue the animation on the next frame
+                requestAnimationFrame(animateFlip);
+            };
+
+            // Start the flip animation
+            requestAnimationFrame(animateFlip);
+        });
     }
 }
 
@@ -549,9 +665,11 @@ class AttackOne extends Attack {
         super();
     }
 
-    start() {
+    async start() {
         this.OnGoing = true;
         console.log("attack one started");
+
+        await revealCards(4);
 
         setTimeout(() => {
             this.OnGoing = false;
@@ -565,7 +683,9 @@ class AttackTwo extends Attack {
         super();
     }
 
-    start() {
+    async start() {
+        revealCards(2);
+
         this.OnGoing = true;
         console.log("attack two started");
 
@@ -705,6 +825,22 @@ class Dialog {
     }
 }
 
+class Suit {
+    static #CLUB = "club";
+    static #DIAMOND = "diamond";
+    static #HEART = "heart";
+    static #JOKERBLACK = "jokerBlack";
+    static #JOKERRED = "jokerRed";
+    static #SPADE = "spade";
+
+    static get CLUB() { return this.#CLUB; }
+    static get DIAMOND() { return this.#DIAMOND; }
+    static get HEART() { return this.#HEART; }
+    static get JOKERBLACK() { return this.#JOKERBLACK; }
+    static get JOKERRED() { return this.#JOKERRED; }
+    static get SPADE() { return this.#SPADE; }
+}
+
 class MovementType {
     static #WASD = 0;
     static #ADJUMP = 1;
@@ -757,7 +893,7 @@ function applyGravity(deltaTime) {
 }
 
 function move(deltaTime) {
-    if(state === State.DIALOG){
+    if (state === State.DIALOG) {
         return;
     }
 
@@ -905,13 +1041,55 @@ function drawCards(number) {
     return (drawedCards);
 }
 
+async function revealCards(number) {
+    return new Promise(async (resolve) => {
+        const cards = drawCards(number);
+
+        let offsetX = 0;
+        for (let i = 0; i < cards.length; i++) {
+            const card = cards[i];
+
+            await card.offsetCard(-60 + offsetX, box ? box.Y - deck.Y : 100);
+
+            offsetX -= CARD_WIDTH + 16;
+        }
+
+        for (let i = 0; i < cards.length; i++) {
+            const card = cards[i];
+
+            card.resetTransform();
+
+        }
+
+        for (let i = 0; i < cards.length; i++) {
+            const card = cards[i];
+
+            await card.startFlipAnimation();
+        }
+
+        setTimeout(() => {
+            for (let i = 0; i < cards.length; i++) {
+                setTimeout(() => {
+                    const card = cards[i];
+
+                    card.div.classList.add("hide");
+                }, i * CARDS_OPACITY_DELAY);
+            }
+
+            resolve();
+        }, CARDS_SHOW_TIME + CARDS_OPACITY_DELAY * cards.length)
+    });
+}
+
 function gameLoop() {
     setInterval(() => {
         deltaTime = 1 / (performance.now() - lastUpTime);
 
-        applyGravity(deltaTime);
-        move(deltaTime);
-        forceInBox();
+        requestAnimationFrame(() => {
+            applyGravity(deltaTime);
+            move(deltaTime);
+            forceInBox();
+        })
 
         const stage = stages[currentStage];
         if (!stage._started) {
@@ -973,10 +1151,6 @@ function initGame() {
     initPositions();
     movementType = MovementType.WASD;
     state = State.Idle;
-
-    console.log(deck.Cards[51]);
-    deck.Cards[51].flip();
-
 
     gameLoop();
 }
