@@ -1,4 +1,10 @@
+const DEBUG = true;
 const TARGETED_GAMELOOP_FREQUENCY = 1 / 60
+
+let TEXT_SPEED = 60;
+if(DEBUG){
+    TEXT_SPEED = 1;
+}
 
 const PLAYER_MAX_HEALTH = 50;
 const PLAYER_SPEED = 50;
@@ -14,10 +20,10 @@ const CARD_HEIGHT = CARD_WIDTH / 27 * 34;
 const GRAVITY_FORCE = 50;
 
 let lastUpTime = performance.now();
-let movementType;
 
+let movementType;
+let state;
 let currentStage;
-let stateFinished = false;
 
 var pressedKeys = {};
 window.onkeyup = function (e) { pressedKeys[e.keyCode] = false; }
@@ -294,10 +300,10 @@ class Deck extends Coordinates {
         this.div.classList.add("deck");
 
         this._cards = [];
-        for(let i = 0; i < NUMBER_OF_CARDS; i++){
+        for (let i = 0; i < NUMBER_OF_CARDS; i++) {
             let card = new Card(this.div);
             card.div.style.transform = "rotate(" + biasedRandom(-6, 6, 2) + "deg) translate(" + biasedRandom(-20, 20, 10) + "%, " + biasedRandom(-20, 20, 10) + "%)";
-            
+
             this._cards.push(card);
         }
     }
@@ -313,6 +319,11 @@ class Deck extends Coordinates {
 class Card extends Classes([Coordinates, WidthHeight]) {
     constructor(container = document.body) {
         super();
+        this._isRotating = false;
+        this._currentAngle = 0;
+
+        this._backSprite = "./images/cards/back.png";
+        this._frontSprite = "./images/cards/spades/Spades_card_01.png";
 
         this.div = createEl("img", container);
         this.div.src = "./images/cards/back.png";
@@ -321,6 +332,40 @@ class Card extends Classes([Coordinates, WidthHeight]) {
         //image en 27x34
         this.Width = CARD_WIDTH;
         this.Height = CARD_HEIGHT;
+    }
+
+    flip(){
+        if (this._isRotating){
+            return;
+        }
+
+        const currentTransform = this.div.style.transform || "";
+        
+        const translateMatch = currentTransform.match(/translate\(([^)]+)\)/);
+        const translateValue = translateMatch ? translateMatch[0] : "translate(0, 0)";
+
+        this._isRotating = true;
+
+        this._currentAngle = 0;
+        
+        const rotateSpeed = 5;
+        const totalRotation = 180;
+        const frameDuration = TARGETED_GAMELOOP_FREQUENCY;
+
+        const rotateInterval = setInterval(() => {
+            this._currentAngle += rotateSpeed;
+            // let localFlip = this._currentAngle >= 90 ? " rotateX(180);" : "";
+            this.div.style.transform = translateValue + " rotateY("+ this._currentAngle + "deg)";
+            this.div.src = this._currentAngle >= 90 ? this._frontSprite : this._backSprite;
+
+            if (this._currentAngle >= totalRotation) {
+                clearInterval(rotateInterval);
+                
+                this.div.style.transform = translateValue + " rotateY(" + totalRotation + "deg)";
+                
+                this._isRotating = false;
+            }
+        }, frameDuration);
     }
 }
 
@@ -337,7 +382,7 @@ class HealthBar extends Classes([Coordinates, WidthHeight]) {
         this.Back = new Rectangle();
         this.Front = new Rectangle();
 
-        this.TextHp = createEl("div", this.div);  
+        this.TextHp = createEl("div", this.div);
         this.TextHp.classList.add("health-bar-text");
         this.TextHp.style.marginTop = "3px";
         this.TextHp.innerHTML = "HP";
@@ -355,14 +400,14 @@ class HealthBar extends Classes([Coordinates, WidthHeight]) {
         this.Front.Width = this.Width;
         this.Front.Height = this.Height;
 
-        this.TextHpValue = createEl("div", this.div);  
+        this.TextHpValue = createEl("div", this.div);
         this.TextHpValue.classList.add("health-bar-text");
         this.TextHpValue.style.fontSize = "20px";
         this.TextHpValue.style.marginTop = "3px";
         this.TextHpValue.innerHTML = PLAYER_MAX_HEALTH + "/" + PLAYER_MAX_HEALTH;
     }
 
-    changeHealth(health){
+    changeHealth(health) {
         this.Front.Width = health * 3;
         this.TextHpValue.innerHTML = health + "/" + PLAYER_MAX_HEALTH;
     }
@@ -412,34 +457,34 @@ class Stage {
         this._finished = false;
     }
 
-    start(){
+    start() {
         this.Started = true;
         this.EntryEvent.start();
     }
 
-    update(){
-        if(this.EntryEvent.OnGoing === true){
+    update() {
+        if (this.EntryEvent.OnGoing === true) {
             return;
         }
 
         let eventsOnGoing = false;
 
-        for(let i = 0; i < this.Events.length; i++){
+        for (let i = 0; i < this.Events.length; i++) {
             const event = this.Events[i];
 
-            if(event.OnGoing === true){
+            if (event.OnGoing === true) {
                 eventsOnGoing = true;
                 break;
             }
         }
 
-        if(this.NextStageActivation() && !eventsOnGoing){
-            this._finished = true;
+        if (this.NextStageActivation() && eventsOnGoing === false) {
+            this.Finished = true;
             return;
         }
 
-        if(eventsOnGoing === false){
-            for(let i = 0; i < this.Events.length; i++){
+        if (eventsOnGoing === false) {
+            for (let i = 0; i < this.Events.length; i++) {
                 const event = this.Events[i];
 
                 event.start();
@@ -499,28 +544,12 @@ class Attack {
     }
 }
 
-class Dialog extends Attack {
-    constructor() {
-        super();
-    }
-
-    start(){
-        this.OnGoing = true;
-        console.log("dialog started");
-
-        setTimeout(() => {
-            this.OnGoing = false;
-            console.log("dialog finished");
-        }, 3000);
-    }
-}
-
 class AttackOne extends Attack {
     constructor() {
         super();
     }
 
-    start(){
+    start() {
         this.OnGoing = true;
         console.log("attack one started");
 
@@ -536,7 +565,7 @@ class AttackTwo extends Attack {
         super();
     }
 
-    start(){
+    start() {
         this.OnGoing = true;
         console.log("attack two started");
 
@@ -544,6 +573,135 @@ class AttackTwo extends Attack {
             this.OnGoing = false;
             console.log("attack two finished");
         }, 3000);
+    }
+}
+
+class Sentence extends Classes([Coordinates, WidthHeight]) {
+    constructor(text) {
+        super();
+
+        this.Text = text;
+    }
+
+    get Text() {
+        return this._text;
+    }
+    set Text(value) {
+        this._text = value;
+    }
+
+    get CurrentChar() {
+        return this._currentChar;
+    }
+    set CurrentChar(value) {
+        this._currentChar = value;
+    }
+
+    get OnGoing() {
+        return this._onGoing;
+    }
+    set OnGoing(value) {
+        this._onGoing = value;
+    }
+
+    play() {
+        this.OnGoing = true;
+        this.CurrentChar = 0;
+
+        this.box = createEl("div", dialogueHelper.div);
+        this.box.classList.add("dialogue");
+
+        this.textDiv = createEl("div", this.box);
+        this.textDiv.classList.add("dialogue-text");
+
+        this.addChar();
+    }
+
+    addChar() {
+        setTimeout(() => {
+            if (this.CurrentChar === this.Text.length) {
+                this.OnGoing = false;
+                return;
+            }
+
+            this.textDiv.innerHTML += this.Text.charAt(this.CurrentChar);
+            this.CurrentChar++;
+
+            this.addChar();
+        }, TEXT_SPEED);
+    }
+
+    destroy() {
+        this.box.remove();
+    }
+}
+
+class Dialog {
+    constructor(sentences) {
+        this.Sentences = [];
+        this.CurrentSentence = 0;
+
+        for (let i = 0; i < sentences.length; i++) {
+            this.Sentences.push(new Sentence(sentences[i]))
+        }
+    }
+
+    start() {
+        state = State.DIALOG;
+        this.OnGoing = true;
+        this.playSentence();
+    }
+
+    async playSentence() {
+        this.Sentences[this.CurrentSentence].play();
+
+        await this.waitForSentenceToFinish();
+
+        this.Sentences[this.CurrentSentence].destroy();
+
+        if (this.CurrentSentence === this.Sentences.length - 1) {
+            this.OnGoing = false;
+            state = State.Idle;
+            return;
+        }
+
+        this.CurrentSentence++;
+        this.playSentence();
+    }
+
+    waitForSentenceToFinish() {
+        return new Promise((resolve) => {
+            const onKeyPress = (event) => {
+                if (!this.Sentences[this.CurrentSentence].OnGoing && (event.keyCode === 90 || event.keyCode === 13)) {
+
+                    document.removeEventListener("keydown", onKeyPress);
+                    resolve();
+                }
+            };
+
+            document.addEventListener("keydown", onKeyPress);
+        });
+    }
+
+    get Sentences() {
+        return this._sentences;
+    }
+    set Sentences(value) {
+        this._sentences = value;
+    }
+
+    get CurrentSentence() {
+        return this._currentSentences;
+    }
+    set CurrentSentence(value) {
+        this._currentSentences = value;
+    }
+
+    get OnGoing() {
+        return this._onGoing;
+    }
+    set OnGoing(value) {
+        this._onGoing = value;
     }
 }
 
@@ -556,12 +714,12 @@ class MovementType {
 }
 
 class State {
-    static #DIALOG = 0;
-    static #DRAWINGCARDS = 1;
+    static #IDLE = 0;
+    static #DIALOG = 1;
     static #ATTACK = 2;
 
+    static get IDLE() { return this.#IDLE; }
     static get DIALOG() { return this.#DIALOG; }
-    static get DRAWINGCARDS() { return this.#DRAWINGCARDS; }
     static get ATTACK() { return this.#ATTACK; }
 }
 
@@ -571,6 +729,9 @@ let player;
 let healthBar;
 let boss;
 let deck;
+let dialogueHelper = new Rectangle();
+dialogueHelper.div = createEl("div");
+dialogueHelper.div.classList.add("dialogue-helper");
 let obstacles = [];
 // let obstacl = new Obstacle(new Rectangle(window.innerWidth / 2 + 50, window.innerHeight / 2 + 50, 100, 100, true));
 // obstacles.push(obstacl);
@@ -581,7 +742,7 @@ function cssVar(name, value) {
     return getComputedStyle(document.documentElement).getPropertyValue(name);
 }
 
-function createEl(tag, container) {
+function createEl(tag, container = document.body) {
     element = document.createElement(tag);
     container.appendChild(element);
     return element;
@@ -596,6 +757,10 @@ function applyGravity(deltaTime) {
 }
 
 function move(deltaTime) {
+    if(state === State.DIALOG){
+        return;
+    }
+
     let heart = player.Heart;
 
     let vector = [0, 0];
@@ -730,14 +895,14 @@ function rectangleCollision(r1, r2) {
     return false;
 }
 
-function drawCards(number){
+function drawCards(number) {
     let drawedCards = [];
 
-    for(let i = 0; i < number; i++){
+    for (let i = 0; i < number; i++) {
         drawedCards.push(deck.Cards.pop());
     }
 
-    return(drawedCards);
+    return (drawedCards);
 }
 
 function gameLoop() {
@@ -747,17 +912,17 @@ function gameLoop() {
         applyGravity(deltaTime);
         move(deltaTime);
         forceInBox();
-        
+
         const stage = stages[currentStage];
-        if(!stage._started){
+        if (!stage._started) {
             stage.start();
         }
         stage.update();
-        if(stage._finished){
-            if(currentStage + 2 >  stages.length){
+        if (stage._finished) {
+            if (currentStage + 2 > stages.length) {
                 console.log("End");
             }
-            else{
+            else {
                 currentStage++;
             }
         }
@@ -784,16 +949,19 @@ function initPositions() {
     boss.X = (window.innerWidth - boss.Width) / 2;
     boss.Y = (window.innerHeight - box.Height) / 2 - boss.Height - yUpperBoardOffset + yGlobalOffset;
 
-    deck.X = window.innerWidth / 2 + box.Width / 2 + 50;
+    deck.X = window.innerWidth / 2 - box.Width / 2 - 50;
     deck.Y = (window.innerHeight - box.Height) / 2 - CARD_HEIGHT - yUpperBoardOffset + yGlobalOffset - 20;
+
+    dialogueHelper.X = window.innerWidth / 2 + boss.Width / 2 + 50;
+    dialogueHelper.Y = (window.innerHeight - box.Height - boss.Height) / 2 - yUpperBoardOffset + yGlobalOffset - 100;
 }
 
 function initGame() {
     console.log("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n")//clears console
 
     stages = [
-        new Stage(new Dialog(), [new AttackOne()], () => { return player.Health <= 40 }),
-        new Stage(new Dialog(), [new AttackTwo()], () => { return player.Health <= 30 }),
+        new Stage(new Dialog(["ohh, look who showed up! Feeling lucky today ?", "I shuffle, you dodge. Easy peasy.", "But you know the rules, don't you ? In the end, the house always wins.", "Let's see what luck has in store for you !"]), [new AttackOne()], () => { return player.Health <= 40 }),
+        new Stage(new Dialog([]), [new AttackTwo()], () => { return player.Health <= 30 }),
     ]
     currentStage = 0;
 
@@ -804,7 +972,10 @@ function initGame() {
     deck = new Deck();
     initPositions();
     movementType = MovementType.WASD;
+    state = State.Idle;
 
+    console.log(deck.Cards[51]);
+    deck.Cards[51].flip();
 
 
     gameLoop();
@@ -813,6 +984,12 @@ function initGame() {
 initGame()
 
 //keys
+function keyAction() {
+    if (pressedKeys[90] || pressedKeys[13]) {
+        return true;
+    }
+    return false;
+}
 function keyUp() {
     if (pressedKeys[90] || pressedKeys[87] || pressedKeys[38]) {
         return true;
@@ -842,17 +1019,43 @@ function keyLeft() {
 function biasedRandom(min, max, power = 2) {
     // Generate a random number between 0 and 1
     let random = Math.random();
-    
+
     // Square the random value to skew it towards 0
     random = random ** power;
-    
+
     if (Math.random() < 0.5) {
         random = -random;
     }
-    
+
     return random * (max - min) / 2 + (min + max) / 2;
 }
 
+if (!DEBUG) {
+    document.documentElement.style.cursor = 'none';
+
+    // var elem = document.documentElement;
+
+    // function openFullscreen() {
+    //     if (elem.requestFullscreen) {
+    //         elem.requestFullscreen();
+    //     } else if (elem.webkitRequestFullscreen) { /* Safari */
+    //         elem.webkitRequestFullscreen();
+    //     } else if (elem.msRequestFullscreen) { /* IE11 */
+    //         elem.msRequestFullscreen();
+    //     }
+    // }
+
+    // document.addEventListener("click", () => {
+    //     openFullscreen();
+    // });
+}
+
+
+
 // document.addEventListener("mousemove", (event) => {
 //     console.log([event.clientY])
+// });
+
+// document.addEventListener("click", function () {
+//     document.body.requestPointerLock();
 // });

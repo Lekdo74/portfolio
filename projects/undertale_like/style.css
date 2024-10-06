@@ -1,5 +1,9 @@
 body {
+    width: 100vw;
+    height: 100vh;
     background-color: black;
+    overflow: hidden;
+    pointer-events: none;
 }
 
 .box {
@@ -56,20 +60,12 @@ body {
     image-rendering: pixelated;
 }
 
-@font-face {
-    font-family: PixelOperatorMonoHB8;
-    src: url(fonts/PixelOperatorMonoHB8.ttf);
-}
-
 .health-bar {
     position: absolute;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 20px;
-}
-
-.health-bar-bars {
 }
 
 
@@ -85,4 +81,51 @@ body {
 .health-bar-text {
     font-family: PixelOperatorMonoHB8;
     color: white;
+}
+
+.dialogue-helper {
+    position: absolute;
+}
+
+.dialogue::before {
+    content: "";
+    position: inherit;
+    top: 104px;
+    left: -40px;
+    display: inline-block;
+    height: 0;
+    width: 0;
+    border-top: 26px solid transparent;
+    border-right: 45px solid white;
+    border-bottom: 19px solid transparent;
+}
+
+.dialogue {
+    position: inherit;
+    background-color: white;
+    padding: 12px 10px 12px 10px;
+    border-radius: 40px;
+    min-width: 400px;
+    max-width: 400px;
+    height: 200px;
+}
+
+.dialogue-text {
+    image-rendering: pixelated;
+    padding: 10px;
+    word-break: normal;
+    font-family: comic_sans_ut_font_rus_eng;
+    color: black;
+    font-size: 24px;
+    letter-spacing: 6px;
+}
+
+@font-face {
+    font-family: PixelOperatorMonoHB8;
+    src: url(fonts/PixelOperatorMonoHB8.ttf);
+}
+
+@font-face {
+    font-family: comic_sans_ut_font_rus_eng;
+    src: url(fonts/comic-sans-ut-font-rus-eng.ttf);
 }
