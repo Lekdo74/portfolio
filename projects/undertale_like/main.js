@@ -7,7 +7,7 @@ if (DEBUG) {
 }
 
 const PLAYER_MAX_HEALTH = 50;
-const PLAYER_SPEED = 50;
+const PLAYER_SPEED = 150;
 const PLAYER_MAX_JUMP_HOLD_TIME = 1;
 const PLAYER_JUMP_FORCE = 1200;
 const PLAYER_RELEASE_JUMP_FORCE = 400;
@@ -1130,7 +1130,7 @@ async function revealCards(number) {
 
 function gameLoop() {
     setInterval(() => {
-        deltaTime = 1 / (performance.now() - lastUpTime);
+        deltaTime = (performance.now() - lastUpTime) / 1000;
 
         applyGravity(deltaTime);
         move(deltaTime);
