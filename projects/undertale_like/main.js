@@ -15,10 +15,14 @@ const PLAYER_HEALTHBAR_HEIGHT = 30;
 
 const CARDS_SPRITES = { club: "./images/cards/clubs/Clubs_card_01.png", diamond: "./images/cards/diamonds/Diamonds_card_01.png", heart: "./images/cards/hearts/Hearts_card_01.png", jokerBlack: "./images/cards/joker/joker_black.png", jokerRed: "./images/cards/joker/joker_red.png", spade: "./images/cards/spades/Spades_card_01.png" }
 const NUMBER_OF_CARDS = 54;
-const CARD_WIDTH = 54;
-const CARD_HEIGHT = CARD_WIDTH / 27 * 34;
+const DECK_CARD_WIDTH = 54;
+const DECK_CARD_HEIGHT = DECK_CARD_WIDTH / 27 * 34;
 const CARDS_SHOW_TIME = 2000;
 const CARDS_OPACITY_DELAY = 100;
+const ATTACK_CARD_WIDTH = 36;
+const ATTACK_CARD_HEIGHT = ATTACK_CARD_WIDTH / 27 * 34;
+const CARDS_SPEED = 300;
+const SPADE_TURNSPEED = 0.75;
 
 const GRAVITY_FORCE = 50;
 
@@ -359,8 +363,8 @@ class Card extends Classes([Coordinates, WidthHeight]) {
         this.div.classList.add("card");
 
         //image en 27x34
-        this.Width = CARD_WIDTH;
-        this.Height = CARD_HEIGHT;
+        this.Width = DECK_CARD_WIDTH;
+        this.Height = DECK_CARD_HEIGHT;
     }
 
     get Suit() {
@@ -665,6 +669,165 @@ class Stage {
     }
 }
 
+class Spade extends Classes([Coordinates, WidthHeight]) {
+    constructor(x, y) {
+        super();
+
+        this.div = createEl("img");
+        this.div.classList.add("card", "spade");
+        this.div.src = CARDS_SPRITES["spade"];
+
+        this.X = x;
+        this.Y = y;
+        this.Width = ATTACK_CARD_WIDTH;
+        this.Height = ATTACK_CARD_HEIGHT;
+
+        this.speed = CARDS_SPEED;
+
+        // Initial velocity (moving in a straight line initially)
+        this.velocity = { x: 1, y: 0 }; // Arbitrary initial direction
+        this.turnSpeed = SPADE_TURNSPEED; // Adjust this value for more or less smooth turns
+
+        this.hasEnteredBox = false;
+
+        this.div.style.opacity = 0; // Start fully transparent
+        this.div.style.transition = 'opacity 1s ease';
+        setTimeout(() => {
+            this.div.style.opacity = 1; // Fade in to full opacity
+        }, 50);
+    }
+
+    // Calculate the desired direction towards the target
+    calculateDirection(target) {
+        const dx = target.X - this.X;
+        const dy = target.Y - this.Y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+
+        if (distance === 0) return { x: 0, y: 0 }; // Edge case, already on target
+
+        return {
+            x: dx / distance,
+            y: dy / distance
+        };
+    }
+
+    // Smoothly adjust the velocity to turn towards the target
+    update(deltaTime, target, box) {
+        const desiredDirection = this.calculateDirection(target);
+
+        // Gradually adjust the velocity towards the desired direction
+        this.velocity.x += (desiredDirection.x - this.velocity.x) * this.turnSpeed;
+        this.velocity.y += (desiredDirection.y - this.velocity.y) * this.turnSpeed;
+
+        // Normalize the velocity to maintain constant speed
+        const velocityMagnitude = Math.sqrt(this.velocity.x * this.velocity.x + this.velocity.y * this.velocity.y);
+
+        if (velocityMagnitude > 0) {
+            // Scale the velocity to maintain a constant speed
+            this.velocity.x = (this.velocity.x / velocityMagnitude) * this.speed;
+            this.velocity.y = (this.velocity.y / velocityMagnitude) * this.speed;
+        }
+
+        // Update the card's position using the updated velocity
+        this.X += this.velocity.x * deltaTime;
+        this.Y += this.velocity.y * deltaTime;
+
+        this.updateRotation();
+
+        if (!this.hasEnteredBox && this.isFullyInsideBox(box)) {
+            this.hasEnteredBox = true;  // Mark as entered
+        }
+
+        if (this.hasEnteredBox && this.hasTouchedBox(box)) {
+            this.disappear();
+        }
+    }
+
+    updateRotation() {
+        // Calculate the angle in radians
+        const angle = Math.atan2(this.velocity.y, this.velocity.x);
+
+        // Convert radians to degrees (CSS uses degrees for rotation)
+        const angleInDegrees = angle * (180 / Math.PI) + 90;
+
+        // Apply the rotation to the div using CSS transform
+        this.div.style.transform = `rotate(${angleInDegrees}deg)`;
+        this.rotation = angle; // Store the current rotation for later use
+    }
+
+    isFullyInsideBox(box) {
+        const corners = this.getRotatedCorners();
+
+        // Check if all corners are inside the bounds of the box
+        for (const corner of corners) {
+            if (corner.x < box.X || corner.x > box.X + box.Width || corner.y < box.Y || corner.y > box.Y + box.Height) {
+                return false; // If any corner is outside the box, return false
+            }
+        }
+
+        return true; // All corners are inside the box
+    }
+
+    // New method to calculate rotated corners of the card
+    getRotatedCorners() {
+        const angle = this.rotation; // Current rotation angle in radians
+        const halfWidth = this.Width / 2;
+        const halfHeight = this.Height / 2;
+
+        // Calculate the four corners based on rotation
+        const corners = [
+            { 
+                x: this.X + halfWidth * Math.cos(angle - Math.PI / 4), 
+                y: this.Y + halfHeight * Math.sin(angle - Math.PI / 4)
+            },
+            { 
+                x: this.X + halfWidth * Math.cos(angle + Math.PI / 4), 
+                y: this.Y + halfHeight * Math.sin(angle + Math.PI / 4)
+            },
+            { 
+                x: this.X + halfWidth * Math.cos(angle + 3 * Math.PI / 4), 
+                y: this.Y + halfHeight * Math.sin(angle + 3 * Math.PI / 4)
+            },
+            { 
+                x: this.X + halfWidth * Math.cos(angle - 3 * Math.PI / 4), 
+                y: this.Y + halfHeight * Math.sin(angle - 3 * Math.PI / 4)
+            }
+        ];
+
+        return corners;
+    }
+
+    hasTouchedBox(box) {
+        const corners = this.getRotatedCorners();
+
+        // Check if any of the corners are outside the bounds of the box
+        for (const corner of corners) {
+            if (corner.x < box.X || corner.x > box.X + box.Width || corner.y < box.Y || corner.y > box.Y + box.Height) {
+                return true; // If any corner is outside the box, return true
+            }
+        }
+
+        return false; // All corners are inside the box
+    }
+
+    disappear() {
+        this.div.style.transition = 'opacity 0.2s ease';
+
+        this.div.style.opacity = 0;
+
+        setTimeout(() => {
+            if (this.div) {
+                this.div.remove();
+            }
+        }, 200);
+
+        // Optionally, stop the card from updating further (depending on game logic)
+        // You can mark the card for deletion or remove it from the game loop
+        this.isRemoved = true; // You might need to handle this in your game logic
+    }
+}
+
+
 class Attack {
     get Cards() {
         return this._cards;
@@ -690,20 +853,61 @@ class AttackOne extends Attack {
         this.OnGoing = true;
         console.log("attack one started");
 
+        const cards_flipped = await revealCards(randInt(1, 2));
 
-        const cards = await revealCards(randInt(1, 2));
+        for (let i = 0; i < cards_flipped.length; i++) {
+            const card = cards_flipped[i];
 
-        for(let i = 0; i < cards.length; i++){
-            const card = cards[i];
+            for (let i = 0; i < 4; i++) {
+                const spawnRegion = Math.floor(Math.random() * 8); // 0-3: sides, 4-7: corners
 
-            for(let i = 0; i < 20; i++){
-                let obstacle = new Obstacle(new Rectangle(window.innerWidth / 2 + randInt(30), window.innerHeight / 2 + randInt(30), 100, 100, true));
-                obstacles.push(obstacle);
-            } 
+                let x, y;
+
+                const distance_from_box = randInt(150, 300);
+
+                switch (spawnRegion) {
+                    case 0: // Top (above the box)
+                        x = box.X + Math.random() * box.Width; // Random x within box's width
+                        y = box.Y - distance_from_box - ATTACK_CARD_HEIGHT; // 100px above the box
+                        break;
+                    case 1: // Right (right of the box)
+                        x = box.X + box.Width + distance_from_box; // 100px to the right of the box
+                        y = box.Y + Math.random() * box.Height; // Random y within box's height
+                        break;
+                    case 2: // Bottom (below the box)
+                        x = box.X + Math.random() * box.Width; // Random x within box's width
+                        y = box.Y + box.Height + distance_from_box; // 100px below the box
+                        break;
+                    case 3: // Left (left of the box)
+                        x = box.X - distance_from_box - ATTACK_CARD_WIDTH; // 100px to the left of the box
+                        y = box.Y + Math.random() * box.Height; // Random y within box's height
+                        break;
+                    case 4: // Top-left corner
+                        x = box.X - distance_from_box - ATTACK_CARD_WIDTH; // 100px to the left
+                        y = box.Y - distance_from_box - ATTACK_CARD_HEIGHT; // 100px above
+                        break;
+                    case 5: // Top-right corner
+                        x = box.X + box.Width + distance_from_box; // 100px to the right
+                        y = box.Y - distance_from_box - ATTACK_CARD_HEIGHT; // 100px above
+                        break;
+                    case 6: // Bottom-left corner
+                        x = box.X - distance_from_box - ATTACK_CARD_WIDTH; // 100px to the left
+                        y = box.Y + box.Height + distance_from_box; // 100px below
+                        break;
+                    case 7: // Bottom-right corner
+                        x = box.X + box.Width + distance_from_box; // 100px to the right
+                        y = box.Y + box.Height + distance_from_box; // 100px below
+                        break;
+                }
+
+                cards.push(new Spade(x, y, player.Heart));
+            }
+
+
 
             switch (card.Suit) {
                 case Suit.CLUB:
-                    
+
 
                     break;
                 case Suit.DIAMOND:
@@ -918,6 +1122,7 @@ let dialogueHelper = new Rectangle();
 dialogueHelper.div = createEl("div");
 dialogueHelper.div.classList.add("dialogue-helper");
 let obstacles = [];
+let cards = [];
 
 function cssVar(name, value) {
     if (name[0] != '-') name = '--' + name;
@@ -1098,7 +1303,7 @@ async function revealCards(number) {
 
             await card.offsetCard(-60 + offsetX, box ? box.Y - deck.Y : 100);
 
-            offsetX -= CARD_WIDTH + 16;
+            offsetX -= DECK_CARD_WIDTH + 16;
         }
 
         for (let i = 0; i < cards.length; i++) {
@@ -1150,6 +1355,11 @@ function gameLoop() {
             }
         }
 
+        for (let i = 0; i < cards.length; i++) {
+            const card = cards[i];
+            card.update(deltaTime, player.Heart, box);
+        }
+
         lastUpTime = performance.now();
     }, TARGETED_GAMELOOP_FREQUENCY)
 }
@@ -1173,7 +1383,7 @@ function initPositions() {
     boss.Y = (window.innerHeight - box.Height) / 2 - boss.Height - yUpperBoardOffset + yGlobalOffset;
 
     deck.X = window.innerWidth / 2 - box.Width / 2 - 50;
-    deck.Y = (window.innerHeight - box.Height) / 2 - CARD_HEIGHT - yUpperBoardOffset + yGlobalOffset - 20;
+    deck.Y = (window.innerHeight - box.Height) / 2 - DECK_CARD_HEIGHT - yUpperBoardOffset + yGlobalOffset - 20;
 
     dialogueHelper.X = window.innerWidth / 2 + boss.Width / 2 + 50;
     dialogueHelper.Y = (window.innerHeight - box.Height - boss.Height) / 2 - yUpperBoardOffset + yGlobalOffset - 100;
@@ -1249,8 +1459,9 @@ function biasedRandom(min, max, power = 2) {
     return random * (max - min) / 2 + (min + max) / 2;
 }
 
-function randInt(max){
-    return Math.round(Math.random() * max);
+function randInt(min, max) {
+    let number = Math.floor(Math.random() * (max - min + 1)) + min;
+    return number;
 }
 
 function shuffle(array) {
